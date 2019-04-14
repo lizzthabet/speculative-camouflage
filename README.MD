@@ -1,4 +1,4 @@
-# **P5JS TypeScript Webpack Template** _with ESlint, Prettier and Babel_
+# **P5JS TypeScript Webpack Template** _with Babel, ESlint and Prettier_
 
 [![License](https://img.shields.io/github/license/derkalaender/p5js-typescript-webpack.svg?color=blue&style=flat-square)](https://github.com/derkalaender/p5js-typescript-webpack/blob/master/LICENSE)
 
