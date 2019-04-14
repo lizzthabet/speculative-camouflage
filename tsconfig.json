@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "module": "esNext",
+    "target": "esNext",
+    "allowJs": false,
+    "removeComments": true
+  },
+  "awesomeTypescriptLoaderOptions": {
+    "useBabel": true,
+    "babelOptions": {
+      "babelrc": false,
+      "presets": [
+        [
+          "@babel/preset-env",
+          { "targets": "last 2 versions, ie 11", "modules": false }
+        ]
+      ]
+    },
+    "babelCore": "@babel/core"
+  }
+}
