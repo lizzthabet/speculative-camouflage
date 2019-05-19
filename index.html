@@ -8,23 +8,10 @@
     />
     <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
+  <link rel="stylesheet" type="text/css" href="src/css/styles.css">
   <body>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        width: 100%;
-        height: 100%;
-      }
-
-      body {
-        position: fixed;
-      }
-
-      canvas {
-        display: block;
-      }
-    </style>
+    <figure id="camo"></figure>
+    <button id="process-colors">Process colors</button>
+    <figure id="color"></figure>
   </body>
 </html>

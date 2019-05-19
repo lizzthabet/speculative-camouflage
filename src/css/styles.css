@@ -1,0 +1,50 @@
+body {
+  background-color: #d3d3d3;
+  color: #333;
+  font-family: 'Courier New', Courier, monospace;
+  margin: 2rem;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+section {
+  margin-top: 2rem;
+}
+
+figure {
+  margin: 1rem 0;
+}
+
+h3 {
+  margin-top: 0;
+}
+
+label, input {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+input {
+  margin-bottom: 1.3rem;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  text-transform: inherit;
+}
+
+.columns {
+  display: flex;
+}
+
+.columns > section {
+  margin-top: 0;
+}
+
+.columns > section + section {
+  margin-left: 1.5rem;
+}

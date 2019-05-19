@@ -5,7 +5,7 @@ const path = require("path");
 // const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
-  entry: ["./src/sketch.ts"],
+  entry: ["./src/ts/sketch.ts"],
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
