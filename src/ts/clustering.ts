@@ -1,9 +1,11 @@
 import * as _ from "lodash";
-import { Color, Cluster, ValueRange, ColorList } from "./types";
+import { Color, Cluster, ValueRange, ColorList, NearestCentroid } from "./types";
 import { randomInt } from "./helpers";
 import { ITERATION_LIMIT } from "./constants";
 
-// Add adoption note
+// Clustering techniques adapted from Xander Lewis
+// https://towardsdatascience.com/extracting-colours-from-an-image-using-k-means-clustering-9616348712be
+// https://github.com/xanderlewis/colour-palettes
 
 export const sortByFrequency = (cl: Cluster, ct: ColorList): [Cluster, ColorList] => {
   const sortedCl: Cluster = []
@@ -77,25 +79,31 @@ const initializeCentroidsRandomly = (data: ColorList, k: number) => {
   return centroids
 }
 
+export const findNearestCentroid = (color: Color, centroids: ColorList): NearestCentroid => {
+  let nearestCentroid = centroids[0]
+  let nearestCentroidIdx = 0
+  let nearestDistance = Infinity
+
+  centroids.forEach((centroid, idx) => {
+    const distance = euclideanDistance(color, centroid)
+    if (distance < nearestDistance) {
+      nearestDistance = distance
+      nearestCentroid = centroid
+      nearestCentroidIdx = idx
+    }
+  })
+
+  return { centroid: nearestCentroid, index: nearestCentroidIdx };
+}
+
 const clusterDataPoints = (data: ColorList, centroids: ColorList) => {
   const clusters: Cluster = []
   centroids.forEach(() => clusters.push([]))
 
   data.forEach(color => {
-    let nearestCentroid = centroids[0]
-    let nearestCentroidIdx = 0
-    let nearestDistance = Infinity
+    const { index } = findNearestCentroid(color, centroids)
 
-    centroids.forEach((centroid, idx) => {
-      const distance = euclideanDistance(color, centroid)
-      if (distance < nearestDistance) {
-        nearestDistance = distance
-        nearestCentroid = centroid
-        nearestCentroidIdx = idx
-      }
-    })
-
-    clusters[nearestCentroidIdx].push(color)
+    clusters[index].push(color)
   })
 
   return clusters

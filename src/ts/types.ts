@@ -25,6 +25,10 @@ export enum Setting {
 export type Color = [number, number, number]
 export type ColorList = Color[]
 export type Cluster = ColorList[]
+export interface NearestCentroid {
+  centroid: Color,
+  index: number,
+}
 export interface ValueRange {
   min: number;
   max: number;

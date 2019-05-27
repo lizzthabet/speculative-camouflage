@@ -2,12 +2,13 @@ import * as p5 from "p5";
 import { perlinHue, perlinBri, perlinSat, addRandomToOffset } from "./helpers";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, config, HUE_START, SAT_START, BRI_START } from "./constants";
 import { Cluster, ColorList } from "./types";
-import { kMeans, sortByFrequency } from "./clustering";
+import { kMeans, sortByFrequency, findNearestCentroid } from "./clustering";
 
 const colors: Array<[number, number, number]> = []
 const clusters: Cluster = []
 const centroids: ColorList = []
 
+// GENERATE ORIGINAL PATTERN
 const sketch = (p: p5) => {
   p.setup = () => {
     p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -74,11 +75,13 @@ const sketch = (p: p5) => {
 };
 
 const camo: HTMLElement = document.getElementById('camo')
-const color: HTMLElement = document.getElementById('color')
+const countEl: HTMLElement = document.getElementById('count')
+const mapEl: HTMLElement = document.getElementById('map')
 
 new p5(sketch, camo);
 
-const sketchColor = (p: p5) => {
+// VISUALIZE COLOR COUNT
+const sketchColorCount = (p: p5) => {
   p.setup = () => p.createCanvas(CANVAS_WIDTH + config.scale * 5, CANVAS_HEIGHT);
 
   p.draw = () => {
@@ -87,6 +90,7 @@ const sketchColor = (p: p5) => {
     const COLS = Math.floor(CANVAS_WIDTH / config.scale)
     const ROWS = Math.floor(CANVAS_HEIGHT / config.scale)
 
+    // Flatten the clustered colors into a 2D array of colors
     const allColorsDeclustered: ColorList = []
     clusters.forEach(cluster => cluster.forEach(c => allColorsDeclustered.push(c)))
     let colorIndex = 0;
@@ -112,23 +116,41 @@ const sketchColor = (p: p5) => {
   };
 };
 
-document.getElementById('process-colors').addEventListener('click', () => {
+// MAP ORIGINAL COLORS TO 16 MOST FREQUENT COLORS
+const sketchColorMap = (p: p5) => {
+  p.setup = () => p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  p.draw = () => {
+    p.colorMode(p.HSB, 100)
+
+    const COLS = Math.floor(CANVAS_WIDTH / config.scale)
+    const ROWS = Math.floor(CANVAS_HEIGHT / config.scale)
+    let colorIdx = 0;
+
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const originalColor = colors[colorIdx]
+        const { centroid } = findNearestCentroid(originalColor, centroids)
+
+        p.noStroke()
+        p.fill(p.color(...centroid))
+        p.rect(x * config.scale, y * config.scale, config.scale, config.scale)
+        colorIdx++;
+      }
+    }
+
+    p.noLoop();
+  };
+}
+
+document.getElementById('count-colors').addEventListener('click', () => {
   const [kClusters, kCentroids] = kMeans(colors, 16)
   const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
 
   clusters.push(...sortedKClusters)
   centroids.push(...sortedKCentroids)
 
-  new p5(sketchColor, color)
+  new p5(sketchColorCount, countEl)
 })
 
-// Some notes on next steps:
-// At 600 x 600, array has 14,400 colors
-// At 400 x 400, array has 6,400 colors
-// Need the 16 most common colors, which will be saved through clustering algorithm
-// Then loop through the canvas space, find out which common color a color is close to, and then replace with that common color?
-
-// Step 1: Perform clustering algo
-// --> Draw a canvas with the clustered colors
-// Step 2: Loop through each color and find out which bucket it belongs in (centroids)
-
+document.getElementById('map-colors').addEventListener('click', () => new p5(sketchColorMap, mapEl))

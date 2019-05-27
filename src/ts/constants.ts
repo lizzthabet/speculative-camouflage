@@ -1,7 +1,7 @@
 import { Setting, Config } from './types';
 
-export const CANVAS_HEIGHT = 800
-export const CANVAS_WIDTH = 800
+export const CANVAS_HEIGHT = 700
+export const CANVAS_WIDTH = 1000
 export const HUE_START = 0
 export const SAT_START = 10000
 export const BRI_START = 20000
