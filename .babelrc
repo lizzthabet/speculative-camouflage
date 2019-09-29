@@ -1,5 +1,14 @@
 {
-  "presets": ["@babel/env", "@babel/typescript"],
+  "presets": [
+    "@babel/typescript",
+    [
+      "@babel/preset-env", {
+        "targets": {
+          "node": "current"
+        }
+      }
+    ]
+  ],
   "plugins": [
     "syntax-trailing-function-commas",
     "@babel/proposal-class-properties",
