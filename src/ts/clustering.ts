@@ -119,10 +119,10 @@ const getNewCentroids = (clusters: Cluster) => {
   return centroids
 }
 
-export const kMeans = (data: ColorList, k: number): [Cluster, ColorList] => {
+// TODO: Add better comment explanations
+export const kMeans = (data: ColorList, k: number, iterations = 0): [Cluster, ColorList] => {
   let clusters: Cluster, oldClusters: Cluster
   let converged = false
-  let iterations = 0
 
   let centroids = initializeCentroidsRandomly(data, k)
 
@@ -131,8 +131,16 @@ export const kMeans = (data: ColorList, k: number): [Cluster, ColorList] => {
     oldClusters = clusters
     clusters = clusterDataPoints(data, centroids)
 
+    // Prevent empty clusters by checking cluster length
     if (clusters.some(c => c.length === 0)) {
-      return kMeans(data, k);
+
+      // If iteration limit has not been reached
+      // try initiating the process again
+      if (iterations >= ITERATION_LIMIT) {
+        throw new Error("Unable to cluster colors into `k` groups within set iteration limit. It's likely colors in the image are too similiar to cluster into `k` groups. Try running again with a lower `k` value.")
+      } else {
+        return kMeans(data, k, iterations);
+      }
     }
 
     if (_.isEqual(clusters, oldClusters) || iterations >= ITERATION_LIMIT) {

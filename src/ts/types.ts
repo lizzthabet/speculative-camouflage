@@ -22,6 +22,7 @@ export enum Setting {
   rBriThresh,
 }
 
+export type RgbaColor = [number, number, number, number]
 export type Color = [number, number, number]
 export type ColorList = Color[]
 export type Cluster = ColorList[]
