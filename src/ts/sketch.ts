@@ -119,27 +119,36 @@ const colorListIteratorFactory = (colorList: ColorList) => {
   }
 }
 
+// Possibly refactor this
+const scaleCanvasHeightToColors = (colorTotal: number, canvasWidth: number) => Math.ceil(
+  colorTotal * Math.pow(config.scale, 2) / canvasWidth
+)
+
 const drawColorsOnCanvasFactory = (
   colorProducer: () => Color,
+  colorListLength: number,
   colorPaletteProducer?: () => Color
 ) => (p: p5) => {
 
   p.setup = () => {
     // If there is a color palette to draw,
     // make the canvas larger to accommodate it
+    const canvasHeight = scaleCanvasHeightToColors(colorListLength, CANVAS_WIDTH);
     if (colorPaletteProducer) {
       const canvasWidthWithPalette = CANVAS_WIDTH + config.scale * PALETTE_SCALE
-      p.createCanvas(canvasWidthWithPalette, CANVAS_HEIGHT)
+      p.createCanvas(canvasWidthWithPalette, canvasHeight)
     } else {
-      p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
+      p.createCanvas(CANVAS_WIDTH, canvasHeight)
     }
   };
 
   p.draw = () => {
+    p.background('white') // For debugging
     p.colorMode(p.HSB, 100)
 
+    const canvasHeight = scaleCanvasHeightToColors(colorListLength, CANVAS_WIDTH);
     const COLS = Math.floor(CANVAS_WIDTH / config.scale)
-    const ROWS = Math.floor(CANVAS_HEIGHT / config.scale)
+    const ROWS = Math.floor(canvasHeight / config.scale)
 
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
@@ -179,12 +188,12 @@ document.getElementById('cluster-colors').addEventListener('click', () => {
   // Make the color reducer and color palette functions
   const colorIterator = colorListIteratorFactory(sortedColors)
   const colorPalette = colorListIteratorFactory(sortedKCentroids)
-  const sketchSortedColors = drawColorsOnCanvasFactory(colorIterator, colorPalette)
+  const sketchSortedColors = drawColorsOnCanvasFactory(colorIterator, sortedColors.length, colorPalette)
 
   new p5(sketchSortedColors, clusterEl)
 
   const colorReducer = colorReducerFactory(colors, sortedKCentroids)
-  const sketchReducedColors = drawColorsOnCanvasFactory(colorReducer)
+  const sketchReducedColors = drawColorsOnCanvasFactory(colorReducer, colors.length)
 
   new p5(sketchReducedColors, reduceEl)
 
@@ -196,10 +205,6 @@ document.getElementById('upload-image').addEventListener('change', async (e: Eve
   const colors = await getUploadedColors(target.files)
   console.log(`Uploaded image has ${colors.length} colors`)
 
-  // With the test images what's happening right now is...
-  // There are so many colors, that we're not iterating through all of them
-  // in the fixed-size canvas, so it's really hard to see the groups
-  // Right now, you might just want to test smaller images
   const [kClusters, kCentroids] = kMeans(colors, 18)
   console.log('Clustering complete', kCentroids, kClusters)
   const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
@@ -211,16 +216,14 @@ document.getElementById('upload-image').addEventListener('change', async (e: Eve
   // Make the color reducer and color palette functions
   const colorIterator = colorListIteratorFactory(sortedColors)
   const colorPalette = colorListIteratorFactory(sortedKCentroids)
-  const sketchSortedColors = drawColorsOnCanvasFactory(colorIterator, colorPalette)
+  const sketchSortedColors = drawColorsOnCanvasFactory(colorIterator, sortedColors.length, colorPalette)
 
   new p5(sketchSortedColors)
 
   // TODO: Map through the original colors and display the closest color from the kClusters
 })
 
-// Next step thoughts on 7/27
-// Create a version of Xander's tool so that you can upload a photo
-// on your site and generate a color palette. (DONE) You'll want to sort all
+// Next step for reducing colors: sort all
 // colors (and the generated centroids) by frequency, so that you can
 // substitute the most frequent color for the most frequent color in
 // the photos
@@ -228,3 +231,5 @@ document.getElementById('upload-image').addEventListener('change', async (e: Eve
 // Nice TODOs
 // - A way to test color accuracy of ingested images?
 // - Add a loading state?
+// - Add an input to allow tweaking the `k` value through UI
+// - Add logic to retry the color palette generation if the diff between centroids is below a certain threshold?
