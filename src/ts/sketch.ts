@@ -1,9 +1,9 @@
 import * as p5 from "p5";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, config, HUE_START, SAT_START, BRI_START, PALETTE_SCALE } from "./constants";
 import { kMeans, sortByFrequency, findNearestCentroid } from "./clustering";
-import { getUploadedColors } from './color'
+import { getColorsFromUploadedImage } from './color'
 import { perlinHue, perlinBri, perlinSat, addRandomToOffset } from "./helpers";
-import { ColorList, Color } from "./types";
+import { ColorList, Color, ColorMode } from "./types";
 
 const colors: ColorList = []
 
@@ -17,7 +17,7 @@ const sketch = (p: p5) => {
 
   p.draw = () => {
     // Set up color mode and random values
-    p.colorMode(p.HSB, 100)
+    p.colorMode(p.HSB)
     p.randomSeed(config.nSeed)
     p.noiseSeed(config.nSeed)
     p.noiseDetail(config.nDetail, config.nAdjust)
@@ -124,11 +124,17 @@ const scaleCanvasHeightToColors = (colorTotal: number, canvasWidth: number) => M
   colorTotal * Math.pow(config.scale, 2) / canvasWidth
 )
 
-const drawColorsOnCanvasFactory = (
-  colorProducer: () => Color,
+const drawColorsOnCanvasFactory = ({
+  colorListLength,
+  colorMode,
+  colorPaletteProducer,
+  colorProducer,
+}: {
   colorListLength: number,
+  colorMode: ColorMode,
   colorPaletteProducer?: () => Color
-) => (p: p5) => {
+  colorProducer: () => Color,
+}) => (p: p5) => {
 
   p.setup = () => {
     // If there is a color palette to draw,
@@ -143,8 +149,17 @@ const drawColorsOnCanvasFactory = (
   };
 
   p.draw = () => {
-    p.background('white') // For debugging
-    p.colorMode(p.HSB, 100)
+    if (colorMode === ColorMode.HSV) {
+      /**
+       * By default, HSB mode uses these ranges (unless otherwise specified):
+       *  H: 0 to 360
+       *  S: 0 to 100
+       *  B: 0 to 100
+       */
+      p.colorMode(p.HSB)
+    } else {
+      p.colorMode(p.RGB)
+    }
 
     const canvasHeight = scaleCanvasHeightToColors(colorListLength, CANVAS_WIDTH);
     const COLS = Math.floor(CANVAS_WIDTH / config.scale)
@@ -176,7 +191,6 @@ const drawColorsOnCanvasFactory = (
   };
 }
 
-// TODO: Change these event listeners to `onchange` methods if possible
 document.getElementById('cluster-colors').addEventListener('click', () => {
   const [kClusters, kCentroids] = kMeans(colors, 32)
   const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
@@ -186,41 +200,75 @@ document.getElementById('cluster-colors').addEventListener('click', () => {
   sortedKClusters.forEach(cluster => cluster.forEach(c => sortedColors.push(c)))
 
   // Make the color reducer and color palette functions
-  const colorIterator = colorListIteratorFactory(sortedColors)
-  const colorPalette = colorListIteratorFactory(sortedKCentroids)
-  const sketchSortedColors = drawColorsOnCanvasFactory(colorIterator, sortedColors.length, colorPalette)
+  const colorProducer = colorListIteratorFactory(sortedColors)
+  const colorPaletteProducer = colorListIteratorFactory(sortedKCentroids)
+  const sketchSortedColors = drawColorsOnCanvasFactory({
+    colorListLength: sortedColors.length,
+    colorMode: ColorMode.HSV,
+    colorPaletteProducer,
+    colorProducer,
+  })
 
   new p5(sketchSortedColors, clusterEl)
 
   const colorReducer = colorReducerFactory(colors, sortedKCentroids)
-  const sketchReducedColors = drawColorsOnCanvasFactory(colorReducer, colors.length)
+  const sketchReducedColors = drawColorsOnCanvasFactory({
+    colorListLength: colors.length,
+    colorMode: ColorMode.HSV,
+    colorProducer: colorReducer,
+  })
 
   new p5(sketchReducedColors, reduceEl)
-
 })
 
+document.getElementById('upload-image-form').addEventListener('submit', async (e: Event) => {
+  e.preventDefault()
 
-document.getElementById('upload-image').addEventListener('change', async (e: Event) => {
-  const target = <HTMLInputElement>e.target;
-  const colors = await getUploadedColors(target.files)
-  console.log(`Uploaded image has ${colors.length} colors`)
+  try {
+    // This is definitely spaghetti code; if it's kept, consider adding
+    // an enum for the ids and doing type casting / checking functions,
+    // plus error handling for the presence of elements and data values
+    const formElements = (e.target as HTMLFormElement).elements;
+    const fileInput = formElements.namedItem('file-upload') as HTMLInputElement
+    const kMeansInput = formElements.namedItem('k-means') as HTMLInputElement
+    const colorModeInput = formElements.namedItem('color-mode') as HTMLInputElement
 
-  const [kClusters, kCentroids] = kMeans(colors, 18)
-  console.log('Clustering complete', kCentroids, kClusters)
-  const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
+    const colors = await getColorsFromUploadedImage({
+      files: fileInput.files,
+      sourceColor: ColorMode.RGB,
+      destinationColor: colorModeInput.value as ColorMode,
+    })
 
-  // For now, just visualize the clustered colors of the uploaded image
-  const sortedColors: ColorList = []
-  sortedKClusters.forEach(cluster => cluster.forEach(c => sortedColors.push(c)))
+    console.log(`Uploaded image has ${colors.length} colors`)
 
-  // Make the color reducer and color palette functions
-  const colorIterator = colorListIteratorFactory(sortedColors)
-  const colorPalette = colorListIteratorFactory(sortedKCentroids)
-  const sketchSortedColors = drawColorsOnCanvasFactory(colorIterator, sortedColors.length, colorPalette)
+    const kMeansValue = parseInt(kMeansInput.value)
+    const [ kClusters, kCentroids ] = kMeans(colors, kMeansValue)
 
-  new p5(sketchSortedColors)
+    console.log('Clustering complete', kCentroids, kClusters)
 
-  // TODO: Map through the original colors and display the closest color from the kClusters
+    const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
+  
+    // For now, just visualize the clustered colors of the uploaded image
+    const sortedColors: ColorList = []
+    sortedKClusters.forEach(cluster => cluster.forEach(c => sortedColors.push(c)))
+  
+    // Make the color reducer and color palette functions
+    const colorProducer = colorListIteratorFactory(sortedColors)
+    const colorPaletteProducer = colorListIteratorFactory(sortedKCentroids)
+    const sketchSortedColors = drawColorsOnCanvasFactory({
+      colorListLength: sortedColors.length,
+      colorMode: colorModeInput.value as ColorMode,
+      colorPaletteProducer,
+      colorProducer,
+    })
+  
+    new p5(sketchSortedColors)
+  
+    // TODO: Map through the original colors and display the closest color from the kClusters
+  }
+  catch (error) {
+    console.error(`Error creating color palette from uploaded image: ${error && error.message}`)
+  }
 })
 
 // Next step for reducing colors: sort all
@@ -229,7 +277,5 @@ document.getElementById('upload-image').addEventListener('change', async (e: Eve
 // the photos
 
 // Nice TODOs
-// - A way to test color accuracy of ingested images?
 // - Add a loading state?
-// - Add an input to allow tweaking the `k` value through UI
 // - Add logic to retry the color palette generation if the diff between centroids is below a certain threshold?

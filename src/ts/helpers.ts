@@ -24,7 +24,7 @@ export const mapBrightness = mapXToY(0, 100, 45, 100)
 
 export const mapSaturation = mapXToY(0, 100, 0, 70)
 
-export const perlinHue = (p: p5, xoff: number, yoff: number) => p.noise(xoff, yoff) * 100
+export const perlinHue = (p: p5, xoff: number, yoff: number) => p.noise(xoff, yoff) * 360
 
 export const perlinSat = (p: p5, xoff: number, yoff: number) => mapSaturation(p.noise(xoff, yoff) * 100)
 

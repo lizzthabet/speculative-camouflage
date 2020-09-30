@@ -10,12 +10,37 @@
   </head>
   <link rel="stylesheet" type="text/css" href="src/css/styles.css">
   <body>
+    <h1>Color mapping from uploaded image to source pattern</h1>
+
+    <h2>Source pattern: fractal-like perlin noise in HSB</h2>
     <figure id="camo"></figure>
+
     <button id="cluster-colors">Cluster & reduce colors</button>
+
+    <h2>Source pattern: color palette w sorted colors</h2>
     <figure id="cluster"></figure>
+
+    <h2>Source pattern: reduced colors</h2>
     <figure id="reduce"></figure>
-    <label for="upload-image">Upload image</label>
-    <input type="file" id="upload-image" multiple="false" accept="image/*"/>
+
+    <form id="upload-image-form" autocomplete="off">
+      <h2>Upload image to extract color palette</h2>
+
+      <label for="file-upload">Image</label>
+      <input type="file" id="file-upload" multiple="false" accept="image/*" required />
+
+      <label for="k-means">Number of colors</label>
+      <input type="number" id="k-means" min="2" max="32" step="1" value="8" required />
+
+      <label for="color-mode">Color mode output</label>
+      <select id="color-mode" required>
+        <option value="rgb">RGB</option>
+        <option value="hsv">HSV</option>
+      </select>
+
+      <button id="upload-image-submit" type="submit">View color palette</button>
+    </form>
+
     <figure id="image"></figure>
   </body>
 </html>

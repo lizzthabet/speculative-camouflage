@@ -1,7 +1,9 @@
 import { UPLOAD_SCALE_WIDTH } from './constants'
-import { RgbaColor, Color } from './types';
+import { RgbaColor, Color, ColorUploadSettings, ColorMode } from './types';
 
 const trimNumber = (n: number, decimalPlace: number) => parseFloat(n.toFixed(decimalPlace))
+
+const rgbaToRgb = ([r, g, b]: RgbaColor): Color => [r, g, b];
 
 const rgbToHsv = (rgb: Color | RgbaColor): Color => {
   const [ r, g, b ] = rgb.map(value => value / 255)
@@ -34,8 +36,8 @@ const rgbToHsv = (rgb: Color | RgbaColor): Color => {
   h /= 6;
 
   // Trim each color to have four decimal places
-  // TODO: Fix the scale of the numbers. Maybe read in the p5 documentation about the * 100 value
-  return <Color>[ h, s, l ].map(number => trimNumber(number * 100, 4))
+  // H values get mapped to 360 (degrees), while S and L values get mapped to 100, which is the default for HSB/L color space in p5
+  return <Color>[h * 360, s * 100, l * 100].map(number => trimNumber(number, 4));
 }
 
 const loadFile = (files: FileList): Promise<string | ArrayBuffer> => {
@@ -87,12 +89,32 @@ const extractPixelData = (image: HTMLImageElement) => {
   return rgbaColorPalette
 }
 
-export const getUploadedColors = async (files: FileList): Promise<Color[]> => {
-  const dataUrl = await loadFile(files)
-  const image = await loadImage(dataUrl)
-  const rgbaColorPalette = extractPixelData(image)
+export const getColorsFromUploadedImage = async (
+  { files, sourceColor, destinationColor }: ColorUploadSettings
+): Promise<Color[]> => {
+  try {
+    const dataUrl = await loadFile(files)
+    const image = await loadImage(dataUrl)
 
-  console.log(`rgba: ${rgbaColorPalette[0]}, hsv: ${rgbToHsv(rgbaColorPalette[0])}`)
+    let colorPalette: RgbaColor[]
 
-  return rgbaColorPalette.map(rgba => rgbToHsv(rgba))
+    // TODO: Add support for other color modes
+    if (sourceColor === ColorMode.RGB) {
+      colorPalette = extractPixelData(image)
+    } else {
+      throw new Error(`Source image must be in RGB color mode, not ${sourceColor}.`)
+    }
+  
+    if (destinationColor === ColorMode.HSV) {
+      return colorPalette.map(rgbToHsv)
+    } else {
+      // Remove the alpha value from color palette
+      return colorPalette.map(rgbaToRgb);
+    }
+  }
+  catch (error) {
+    console.error(`Error getting colors from uploaded image: ${error && error.message}`)
+
+    return []
+  }
 }

@@ -34,3 +34,14 @@ export interface ValueRange {
   min: number;
   max: number;
 }
+
+export enum ColorMode {
+  RGB = 'rgb',
+  HSV = 'hsv',
+}
+
+export interface ColorUploadSettings {
+  files: FileList,
+  sourceColor: ColorMode,
+  destinationColor: ColorMode,
+}
