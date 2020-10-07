@@ -2,24 +2,13 @@ import * as p5 from "p5";
 import * as _ from "lodash";
 import { ColorList, Color, ColorMode } from "./types";
 import { CANVAS_WIDTH, config, PALETTE_SCALE } from "./constants";
-import { kMeans, sortByFrequency, findNearestCentroid } from "./clustering";
-import { getColorsFromUploadedImage } from './color'
-import { generateNoisePattern } from "./noise-pattern";
+import { findNearestCentroid } from "./clustering";
 
-const camo: HTMLElement = document.getElementById('camo')
-const clusterEl: HTMLElement = document.getElementById('cluster')
-const reduceEl: HTMLElement = document.getElementById('reduce')
-const imageEl: HTMLElement = document.getElementById('image')
-
-
-// TODO: Move sketch factories to a new helper file? Or move core code to `index.ts`
-// TODO: Refactor the factor functions so they can iterate through 
-
-/* FACTORY FUNCTIONS */
+// TODO: Refactor the factor functions so they can iterate through different canvas dimensions
 
 // This factory interates through a color list and returns the
 // closest centroid to the current color
-const colorReducerFactory = (originalColors: ColorList, centroids: ColorList) => {
+export const colorReducerFactory = (originalColors: ColorList, centroids: ColorList) => {
   // Keep track of the current index of the color array that we're incrementing through
   let colorIdx = 0;
 
@@ -40,7 +29,7 @@ const colorReducerFactory = (originalColors: ColorList, centroids: ColorList) =>
 
 // This factory iterates through a color list and returns the next color
 // in the list every time the function is called
-const colorListIteratorFactory = (colorList: ColorList) => {
+export const colorListIteratorFactory = (colorList: ColorList) => {
   let index = 0
 
   return () => {
@@ -56,12 +45,12 @@ const colorListIteratorFactory = (colorList: ColorList) => {
   }
 }
 
-// Possibly refactor this
+// Possibly refactor this or move to helpers
 const scaleCanvasHeightToColors = (colorTotal: number, canvasWidth: number) => Math.ceil(
   colorTotal * Math.pow(config.scale, 2) / canvasWidth
 )
 
-const drawColorsOnCanvasFactory = ({
+export const drawColorsOnCanvasFactory = ({
   colorListLength,
   colorMode,
   colorPaletteProducer,
@@ -127,99 +116,6 @@ const drawColorsOnCanvasFactory = ({
     p.noLoop();
   };
 }
-
-/* END FACTORY FUNCTIONS */
-
-const noisePatternColors = generateNoisePattern()
-const colorProducer = colorListIteratorFactory(noisePatternColors)
-const noisePatternSketch = drawColorsOnCanvasFactory({
-  colorListLength: noisePatternColors.length,
-  colorMode: ColorMode.HSV,
-  colorProducer: colorProducer
-})
-
-new p5(noisePatternSketch, camo)
-
-document.getElementById('cluster-colors').addEventListener('click', () => {
-  const colors = generateNoisePattern()
-  const [kClusters, kCentroids] = kMeans(colors, 32)
-  const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
-
-  // Flatten the kClusters into a single array
-  const sortedColors: ColorList = []
-  sortedKClusters.forEach(cluster => cluster.forEach(c => sortedColors.push(c)))
-
-  // Make the color reducer and color palette functions
-  const colorProducer = colorListIteratorFactory(sortedColors)
-  const colorPaletteProducer = colorListIteratorFactory(sortedKCentroids)
-  const sketchSortedColors = drawColorsOnCanvasFactory({
-    colorListLength: sortedColors.length,
-    colorMode: ColorMode.HSV,
-    colorPaletteProducer,
-    colorProducer,
-  })
-
-  new p5(sketchSortedColors, clusterEl)
-
-  const colorReducer = colorReducerFactory(colors, sortedKCentroids)
-  const sketchReducedColors = drawColorsOnCanvasFactory({
-    colorListLength: colors.length,
-    colorMode: ColorMode.HSV,
-    colorProducer: colorReducer,
-  })
-
-  new p5(sketchReducedColors, reduceEl)
-})
-
-document.getElementById('upload-image-form').addEventListener('submit', async (e: Event) => {
-  e.preventDefault()
-
-  try {
-    // This is definitely spaghetti code; if it's kept, consider adding
-    // an enum for the ids and doing type casting / checking functions,
-    // plus error handling for the presence of elements and data values
-    const formElements = (e.target as HTMLFormElement).elements;
-    const fileInput = formElements.namedItem('file-upload') as HTMLInputElement
-    const kMeansInput = formElements.namedItem('k-means') as HTMLInputElement
-    const colorModeInput = formElements.namedItem('color-mode') as HTMLInputElement
-
-    const colors = await getColorsFromUploadedImage({
-      files: fileInput.files,
-      sourceColor: ColorMode.RGB,
-      destinationColor: colorModeInput.value as ColorMode,
-    })
-
-    console.log(`Uploaded image has ${colors.length} colors`)
-
-    const kMeansValue = parseInt(kMeansInput.value)
-    const [ kClusters, kCentroids ] = kMeans(colors, kMeansValue)
-
-    console.log('Clustering complete', kCentroids, kClusters)
-
-    const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
-  
-    // For now, just visualize the clustered colors of the uploaded image
-    const sortedColors: ColorList = []
-    sortedKClusters.forEach(cluster => cluster.forEach(c => sortedColors.push(c)))
-  
-    // Make the color reducer and color palette functions
-    const colorProducer = colorListIteratorFactory(sortedColors)
-    const colorPaletteProducer = colorListIteratorFactory(sortedKCentroids)
-    const sketchSortedColors = drawColorsOnCanvasFactory({
-      colorListLength: sortedColors.length,
-      colorMode: colorModeInput.value as ColorMode,
-      colorPaletteProducer,
-      colorProducer,
-    })
-  
-    new p5(sketchSortedColors, imageEl)
-  
-    // TODO: Map through the original colors and display the closest color from the kClusters
-  }
-  catch (error) {
-    console.error(`Error creating color palette from uploaded image: ${error && error.message}`)
-  }
-})
 
 // Nice TODOs
 // - Add a loading state when processing colors
