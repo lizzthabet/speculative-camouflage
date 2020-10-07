@@ -4,6 +4,7 @@ import { kMeans, sortByFrequency } from "./clustering";
 import { getColorsFromUploadedImage } from './color'
 import { generateNoisePattern } from "./noise-pattern";
 import { colorListIteratorFactory, drawColorsOnCanvasFactory, colorReducerFactory } from "./sketch";
+import { DEFAULT_CANVAS_WIDTH } from "./constants";
 
 window.addEventListener('load', () => {
   // Grab the elements that each canvas sketch will be attached to
@@ -51,12 +52,13 @@ window.addEventListener('load', () => {
 })
 
 function drawNoisePattern(canvas: HTMLElement) {
-  const noisePatternColors = generateNoisePattern() // TODO: Add height and width params
+  const noisePatternColors = generateNoisePattern()
   const colorProducer = colorListIteratorFactory(noisePatternColors)
   const sketch = drawColorsOnCanvasFactory({
     colorListLength: noisePatternColors.length,
     colorMode: ColorMode.HSV,
-    colorProducer: colorProducer
+    colorProducer,
+    canvasWidth: DEFAULT_CANVAS_WIDTH,
   })
 
   new p5(sketch, canvas)
@@ -79,6 +81,7 @@ function clusterAndReduceColors(clusterCanvas: HTMLElement, reduceCanvas: HTMLEl
     colorMode: ColorMode.HSV,
     colorPaletteProducer,
     colorProducer,
+    canvasWidth: DEFAULT_CANVAS_WIDTH,
   })
 
   new p5(sketchSortedColors, clusterCanvas)
@@ -88,6 +91,7 @@ function clusterAndReduceColors(clusterCanvas: HTMLElement, reduceCanvas: HTMLEl
     colorListLength: colors.length,
     colorMode: ColorMode.HSV,
     colorProducer: colorReducer,
+    canvasWidth: DEFAULT_CANVAS_WIDTH,
   })
 
   new p5(sketchReducedColors, reduceCanvas)
@@ -125,6 +129,7 @@ async function extractColorPaletteFromUploadedImage(
     colorMode,
     colorPaletteProducer,
     colorProducer,
+    canvasWidth: DEFAULT_CANVAS_WIDTH,
   })
 
   new p5(sketchSortedColors, colorPaletteCanvas)

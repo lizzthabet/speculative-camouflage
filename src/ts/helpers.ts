@@ -30,3 +30,7 @@ export const perlinHue = (p: p5, xoff: number, yoff: number) => p.noise(xoff, yo
 export const perlinSat = (p: p5, xoff: number, yoff: number) => mapSaturation(p.noise(xoff, yoff) * 100)
 
 export const perlinBri = (p: p5, xoff: number, yoff: number) => mapBrightness(p.noise(xoff, yoff) * 100)
+
+export const scaleCanvasHeightToColors = (colorTotal: number, colorScale: number, canvasWidth: number) => Math.ceil(
+  colorTotal * Math.pow(colorScale, 2) / canvasWidth
+)

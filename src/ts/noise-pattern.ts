@@ -1,5 +1,5 @@
 import * as p5 from "p5";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, config, HUE_START, SAT_START, BRI_START } from "./constants";
+import { DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, config, HUE_START, SAT_START, BRI_START } from "./constants";
 import { perlinHue, perlinBri, perlinSat, addRandomToOffset } from "./helpers";
 import { ColorList } from "./types";
 
@@ -13,8 +13,8 @@ const p = new p5(EMPTY_SKETCH)
 
 // Generate the color data for the noise pattern
 export const generateNoisePattern = (
-  width: number = CANVAS_WIDTH,
-  height: number = CANVAS_HEIGHT,
+  width: number = DEFAULT_CANVAS_WIDTH,
+  height: number = DEFAULT_CANVAS_HEIGHT,
   randomSeed: number = config.nSeed,
   noiseSeed: number = config.nSeed,
 ): ColorList => {

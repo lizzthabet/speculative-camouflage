@@ -1,10 +1,9 @@
 import * as p5 from "p5";
 import * as _ from "lodash";
 import { ColorList, Color, ColorMode } from "./types";
-import { CANVAS_WIDTH, config, PALETTE_SCALE } from "./constants";
+import { config, PALETTE_SCALE } from "./constants";
 import { findNearestCentroid } from "./clustering";
-
-// TODO: Refactor the factor functions so they can iterate through different canvas dimensions
+import { scaleCanvasHeightToColors } from "./helpers";
 
 // This factory interates through a color list and returns the
 // closest centroid to the current color
@@ -45,17 +44,14 @@ export const colorListIteratorFactory = (colorList: ColorList) => {
   }
 }
 
-// Possibly refactor this or move to helpers
-const scaleCanvasHeightToColors = (colorTotal: number, canvasWidth: number) => Math.ceil(
-  colorTotal * Math.pow(config.scale, 2) / canvasWidth
-)
-
 export const drawColorsOnCanvasFactory = ({
+  canvasWidth,
   colorListLength,
   colorMode,
   colorPaletteProducer,
   colorProducer,
 }: {
+  canvasWidth: number,
   colorListLength: number,
   colorMode: ColorMode,
   colorPaletteProducer?: () => Color
@@ -63,32 +59,28 @@ export const drawColorsOnCanvasFactory = ({
 }) => (p: p5) => {
 
   p.setup = () => {
+    // Dynamically determine canvas height based on width and colors to render
+    const canvasHeight = scaleCanvasHeightToColors(colorListLength, config.scale, canvasWidth);
+
     // If there is a color palette to draw,
     // make the canvas larger to accommodate it
-    const canvasHeight = scaleCanvasHeightToColors(colorListLength, CANVAS_WIDTH);
     if (colorPaletteProducer) {
-      const canvasWidthWithPalette = CANVAS_WIDTH + config.scale * PALETTE_SCALE
+      const canvasWidthWithPalette = canvasWidth + config.scale * PALETTE_SCALE
       p.createCanvas(canvasWidthWithPalette, canvasHeight)
     } else {
-      p.createCanvas(CANVAS_WIDTH, canvasHeight)
+      p.createCanvas(canvasWidth, canvasHeight)
     }
   };
 
   p.draw = () => {
     if (colorMode === ColorMode.HSV) {
-      /**
-       * By default, HSB mode uses these ranges (unless otherwise specified):
-       *  H: 0 to 360
-       *  S: 0 to 100
-       *  B: 0 to 100
-       */
       p.colorMode(p.HSB)
     } else {
       p.colorMode(p.RGB)
     }
 
-    const canvasHeight = scaleCanvasHeightToColors(colorListLength, CANVAS_WIDTH);
-    const COLS = Math.floor(CANVAS_WIDTH / config.scale)
+    const canvasHeight = scaleCanvasHeightToColors(colorListLength, config.scale, canvasWidth);
+    const COLS = Math.floor(canvasWidth / config.scale)
     const ROWS = Math.floor(canvasHeight / config.scale)
 
     for (let y = 0; y < ROWS; y++) {
