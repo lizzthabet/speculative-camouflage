@@ -1,84 +1,21 @@
 import * as p5 from "p5";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, config, HUE_START, SAT_START, BRI_START, PALETTE_SCALE } from "./constants";
+import * as _ from "lodash";
+import { ColorList, Color, ColorMode } from "./types";
+import { CANVAS_WIDTH, config, PALETTE_SCALE } from "./constants";
 import { kMeans, sortByFrequency, findNearestCentroid } from "./clustering";
 import { getColorsFromUploadedImage } from './color'
-import { perlinHue, perlinBri, perlinSat, addRandomToOffset } from "./helpers";
-import { ColorList, Color, ColorMode } from "./types";
-
-const colors: ColorList = []
-
-// GENERATE ORIGINAL PATTERN
-const sketch = (p: p5) => {
-  p.setup = () => {
-    p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-  };
-
-  p.windowResized = () => {};
-
-  p.draw = () => {
-    // Set up color mode and random values
-    p.colorMode(p.HSB)
-    p.randomSeed(config.nSeed)
-    p.noiseSeed(config.nSeed)
-    p.noiseDetail(config.nDetail, config.nAdjust)
-
-    const COLS = Math.floor(CANVAS_WIDTH / config.scale)
-    const ROWS = Math.floor(CANVAS_HEIGHT / config.scale)
-    let yoffset = 0
-
-    // Loop through canvas space
-    for (let y = 0; y < ROWS; y++) {
-      let xHueOff = HUE_START, xSatOff = SAT_START, xBriOff = BRI_START
-
-      for (let x = 0; x < COLS; x++) {
-        let hue: number, bri: number, sat: number
-
-        // Introduce random additions to Perlin noise values
-        if (p.random(100) < config.rNumThresh) {
-          const [rHueXoff, rHueYoff] = addRandomToOffset(p, xHueOff, y, config.rHueThresh)
-          hue = perlinHue(p, rHueXoff, rHueYoff)
-
-          const [rBriXoff, rBriYoff] = addRandomToOffset(p, xBriOff, y, config.rBriThresh)
-          bri = perlinBri(p, rBriXoff, rBriYoff)
-
-          const [rSatXoff, rSatYoff] = addRandomToOffset(p, xSatOff, y, config.rSatThresh)
-          sat = perlinSat(p, rSatXoff, rSatYoff)
-
-        } else {
-          // No random additions to Perlin noise values
-          hue = perlinHue(p, xHueOff, yoffset)
-          sat = perlinSat(p, xSatOff, yoffset)
-          bri = perlinBri(p, xBriOff, yoffset)
-        }
-
-        // Draw rectangle with color
-        p.noStroke()
-        p.fill(p.color(hue, sat, bri))
-        p.rect(x * config.scale, y * config.scale, config.scale, config.scale)
-
-        // Increment the x offset values
-        xHueOff += config.increment
-        xSatOff += config.increment
-        xBriOff += config.increment
-
-        colors.push([hue, sat, bri])
-      }
-
-      // Increment the y offset value
-      yoffset += config.increment
-    }
-
-    // For performance
-    p.noLoop();
-  };
-};
+import { generateNoisePattern } from "./noise-pattern";
 
 const camo: HTMLElement = document.getElementById('camo')
 const clusterEl: HTMLElement = document.getElementById('cluster')
 const reduceEl: HTMLElement = document.getElementById('reduce')
 const imageEl: HTMLElement = document.getElementById('image')
 
-new p5(sketch, camo);
+
+// TODO: Move sketch factories to a new helper file? Or move core code to `index.ts`
+// TODO: Refactor the factor functions so they can iterate through 
+
+/* FACTORY FUNCTIONS */
 
 // This factory interates through a color list and returns the
 // closest centroid to the current color
@@ -191,7 +128,20 @@ const drawColorsOnCanvasFactory = ({
   };
 }
 
+/* END FACTORY FUNCTIONS */
+
+const noisePatternColors = generateNoisePattern()
+const colorProducer = colorListIteratorFactory(noisePatternColors)
+const noisePatternSketch = drawColorsOnCanvasFactory({
+  colorListLength: noisePatternColors.length,
+  colorMode: ColorMode.HSV,
+  colorProducer: colorProducer
+})
+
+new p5(noisePatternSketch, camo)
+
 document.getElementById('cluster-colors').addEventListener('click', () => {
+  const colors = generateNoisePattern()
   const [kClusters, kCentroids] = kMeans(colors, 32)
   const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
 
@@ -262,7 +212,7 @@ document.getElementById('upload-image-form').addEventListener('submit', async (e
       colorProducer,
     })
   
-    new p5(sketchSortedColors)
+    new p5(sketchSortedColors, imageEl)
   
     // TODO: Map through the original colors and display the closest color from the kClusters
   }
@@ -271,11 +221,6 @@ document.getElementById('upload-image-form').addEventListener('submit', async (e
   }
 })
 
-// Next step for reducing colors: sort all
-// colors (and the generated centroids) by frequency, so that you can
-// substitute the most frequent color for the most frequent color in
-// the photos
-
 // Nice TODOs
-// - Add a loading state?
+// - Add a loading state when processing colors
 // - Add logic to retry the color palette generation if the diff between centroids is below a certain threshold?

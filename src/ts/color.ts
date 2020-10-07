@@ -104,7 +104,7 @@ export const getColorsFromUploadedImage = async (
     } else {
       throw new Error(`Source image must be in RGB color mode, not ${sourceColor}.`)
     }
-  
+
     if (destinationColor === ColorMode.HSV) {
       return colorPalette.map(rgbToHsv)
     } else {

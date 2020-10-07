@@ -20,6 +20,7 @@ const mapXToY = (xStart: number, xEnd: number, yStart: number, yEnd: number) => 
   return yStart + scale * (n - xStart)
 }
 
+// TODO: Add explanation for why values are mapped and clapped at certain ranges
 export const mapBrightness = mapXToY(0, 100, 45, 100)
 
 export const mapSaturation = mapXToY(0, 100, 0, 70)
