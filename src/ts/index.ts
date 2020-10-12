@@ -1,10 +1,10 @@
 import * as p5 from "p5";
-import { ColorList, ColorMode } from "./types";
-import { kMeans, sortByFrequency } from "./clustering";
+import { Color, ColorList, ColorMode } from "./types";
+import { findNearestCentroid, kMeans, sortByFrequency } from "./clustering";
 import { getColorsFromUploadedImage } from './color'
 import { generateNoisePattern } from "./noise-pattern";
 import { colorListIteratorFactory, drawColorsOnCanvasFactory, colorReducerFactory } from "./sketch";
-import { DEFAULT_CANVAS_WIDTH } from "./constants";
+import { DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH } from "./constants";
 
 window.addEventListener('load', () => {
   // Grab the elements that each canvas sketch will be attached to
@@ -42,7 +42,7 @@ window.addEventListener('load', () => {
         const colorModeValue = colorModeInput.value as ColorMode
         const kMeansValue = parseInt(kMeansInput.value)
 
-        await extractColorPaletteFromUploadedImage(files, colorModeValue, kMeansValue, colorPaletteCanvas)
+        await drawColorPaletteFromUploadedImage(files, colorModeValue, kMeansValue, colorPaletteCanvas)
 
       } catch (error) {
         console.error(`Error creating color palette from uploaded image: ${error && error.message}`)
@@ -97,7 +97,7 @@ function clusterAndReduceColors(clusterCanvas: HTMLElement, reduceCanvas: HTMLEl
   new p5(sketchReducedColors, reduceCanvas)
 }
 
-async function extractColorPaletteFromUploadedImage(
+async function drawColorPaletteFromUploadedImage(
   files: FileList,
   colorMode: ColorMode,
   kMeansValue: number,
@@ -133,4 +133,75 @@ async function extractColorPaletteFromUploadedImage(
   })
 
   new p5(sketchSortedColors, colorPaletteCanvas)
+
+  /**
+   * New code!
+   *   Two sets of sorted kCentroids, will map them to each other
+   *   Loop through the noise pattern data. Based on which centroid each color belongs to, draw the corresponding color in the uploaded image.
+   */
+
+  // This code is a little redundant and clunky for now
+  const noisePatternColors = generateNoisePattern(DEFAULT_CANVAS_WIDTH * 1.25, DEFAULT_CANVAS_HEIGHT * 1.5)
+  const [noiseKClusters, noiseKCentroids] = kMeans(noisePatternColors, kMeansValue)
+  const [noiseSortedKClusters, noiseSortedKCentroids] = sortByFrequency(noiseKClusters, noiseKCentroids)
+
+  const patternToImagePalette = noiseSortedKCentroids.reduce((colorMap, noiseCentroid, i) => {
+    const correspondingImageCentroid = sortedKCentroids[i]
+    colorMap.set(noiseCentroid, { centroid: correspondingImageCentroid, cluster: sortedKClusters[i], next: 0 })
+
+    return colorMap
+  }, new Map<Color, { centroid: Color, cluster: ColorList, next: number }>())
+
+  // const mappedSortedColors: ColorList = []
+  // noiseSortedKClusters.forEach((noiseCluster) => {
+  //   noiseCluster.forEach((noiseColor) => {
+  //     const {centroid} = findNearestCentroid(noiseColor, noiseKCentroids)
+  //     const imagePaletteColor = patternToImagePalette.get(centroid)
+  //     if (!imagePaletteColor) {
+  //       console.error(`No image palette color found for ${noiseColor} that is nearest to ${centroid}`)
+  //     } else {
+  //       mappedSortedColors.push(imagePaletteColor)
+  //     }
+  //   })
+  // })
+
+  // const mappedSortedColorProducer = colorListIteratorFactory(mappedSortedColors)
+  // const mappedSortedSketch = drawColorsOnCanvasFactory({
+  //   canvasWidth: DEFAULT_CANVAS_WIDTH * 1.25,
+  //   colorListLength: mappedSortedColors.length,
+  //   colorMode: ColorMode.RGB,
+  //   colorPaletteProducer,
+  //   colorProducer: mappedSortedColorProducer,
+  // })
+
+  // new p5(mappedSortedSketch, colorPaletteCanvas)
+
+  const mappedColors: ColorList = []
+  noisePatternColors.forEach((noiseColor) => {
+    const {centroid} = findNearestCentroid(noiseColor, noiseKCentroids)
+    const correspondingPalette = patternToImagePalette.get(centroid)
+    if (!correspondingPalette || !correspondingPalette.cluster[correspondingPalette.next]) {
+      console.error(`No image palette color found for ${noiseColor} that is nearest to ${centroid}`)
+    } else {
+      const mappedColor = correspondingPalette.cluster[correspondingPalette.next]
+
+      // Very mutative way of doing this, but whatever?
+      correspondingPalette.next = correspondingPalette.next === correspondingPalette.cluster.length - 1 ?
+        0 : correspondingPalette.next + 1
+
+      // mappedColors.push(correspondingPalette.centroid)
+      mappedColors.push(mappedColor)
+    }
+  })
+
+  const mappedColorProducer = colorListIteratorFactory(mappedColors)
+  const mappedSketch = drawColorsOnCanvasFactory({
+    canvasWidth: DEFAULT_CANVAS_WIDTH * 1.25,
+    colorListLength: mappedColors.length,
+    colorMode: ColorMode.RGB,
+    colorPaletteProducer,
+    colorProducer: mappedColorProducer,
+  })
+
+  new p5(mappedSketch, colorPaletteCanvas)
 }
