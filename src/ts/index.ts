@@ -66,16 +66,16 @@ function drawNoisePattern(canvas: HTMLElement) {
 
 function clusterAndReduceColors(clusterCanvas: HTMLElement, reduceCanvas: HTMLElement) {
   const colors = generateNoisePattern()
-  const [kClusters, kCentroids] = kMeans(colors, 32)
-  const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
+  const {clusters, centroids} = kMeans(colors, 32)
+  const {sortedClusters, sortedCentroids} = sortByFrequency(clusters, centroids)
 
   // Flatten the kClusters into a single array
   const sortedColors: ColorList = []
-  sortedKClusters.forEach(cluster => cluster.forEach(c => sortedColors.push(c)))
+  sortedClusters.forEach(cluster => cluster.forEach(c => sortedColors.push(c)))
 
   // Make the color reducer and color palette functions
   const colorProducer = colorListIteratorFactory(sortedColors)
-  const colorPaletteProducer = colorListIteratorFactory(sortedKCentroids)
+  const colorPaletteProducer = colorListIteratorFactory(sortedCentroids)
   const sketchSortedColors = drawColorsOnCanvasFactory({
     colorListLength: sortedColors.length,
     colorMode: ColorMode.HSV,
@@ -86,7 +86,7 @@ function clusterAndReduceColors(clusterCanvas: HTMLElement, reduceCanvas: HTMLEl
 
   new p5(sketchSortedColors, clusterCanvas)
 
-  const colorReducer = colorReducerFactory(colors, sortedKCentroids)
+  const colorReducer = colorReducerFactory(colors, sortedCentroids)
   const sketchReducedColors = drawColorsOnCanvasFactory({
     colorListLength: colors.length,
     colorMode: ColorMode.HSV,
@@ -111,19 +111,19 @@ async function drawColorPaletteFromUploadedImage(
 
   console.log(`Uploaded image has ${colors.length} colors`)
 
-  const [kClusters, kCentroids] = kMeans(colors, kMeansValue)
+  const {clusters, centroids} = kMeans(colors, kMeansValue)
 
-  console.log('Clustering complete', kCentroids, kClusters)
+  console.log('Clustering complete', centroids, clusters)
 
-  const [sortedKClusters, sortedKCentroids] = sortByFrequency(kClusters, kCentroids)
+  const {sortedClusters, sortedCentroids} = sortByFrequency(clusters, centroids)
 
   // For now, just visualize the clustered colors of the uploaded image
   const sortedColors: ColorList = []
-  sortedKClusters.forEach(cluster => cluster.forEach(c => sortedColors.push(c)))
+  sortedClusters.forEach(cluster => cluster.forEach(c => sortedColors.push(c)))
 
   // Make the color reducer and color palette functions
   const colorProducer = colorListIteratorFactory(sortedColors)
-  const colorPaletteProducer = colorListIteratorFactory(sortedKCentroids)
+  const colorPaletteProducer = colorListIteratorFactory(sortedCentroids)
   const sketchSortedColors = drawColorsOnCanvasFactory({
     colorListLength: sortedColors.length,
     colorMode,
@@ -142,12 +142,12 @@ async function drawColorPaletteFromUploadedImage(
 
   // This code is a little redundant and clunky for now
   const noisePatternColors = generateNoisePattern(DEFAULT_CANVAS_WIDTH * 1.25, DEFAULT_CANVAS_HEIGHT * 1.5)
-  const [noiseKClusters, noiseKCentroids] = kMeans(noisePatternColors, kMeansValue)
-  const [noiseSortedKClusters, noiseSortedKCentroids] = sortByFrequency(noiseKClusters, noiseKCentroids)
+  const {clusters: noiseKClusters, centroids: noiseKCentroids} = kMeans(noisePatternColors, kMeansValue)
+  const {sortedCentroids: noiseSortedKCentroids} = sortByFrequency(noiseKClusters, noiseKCentroids)
 
   const patternToImagePalette = noiseSortedKCentroids.reduce((colorMap, noiseCentroid, i) => {
-    const correspondingImageCentroid = sortedKCentroids[i]
-    colorMap.set(noiseCentroid, { centroid: correspondingImageCentroid, cluster: sortedKClusters[i], next: 0 })
+    const correspondingImageCentroid = sortedCentroids[i]
+    colorMap.set(noiseCentroid, { centroid: correspondingImageCentroid, cluster: sortedClusters[i], next: 0 })
 
     return colorMap
   }, new Map<Color, { centroid: Color, cluster: ColorList, next: number }>())

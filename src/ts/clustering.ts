@@ -7,18 +7,18 @@ import { ITERATION_LIMIT } from "./constants";
 // https://towardsdatascience.com/extracting-colours-from-an-image-using-k-means-clustering-9616348712be
 // https://github.com/xanderlewis/colour-palettes
 
-export const sortByFrequency = (cl: Cluster, ct: ColorList): [Cluster, ColorList] => {
-  const sortedCl: Cluster = []
-  const sortedCt: ColorList = []
+export const sortByFrequency = (cl: Cluster, ct: ColorList): { sortedClusters: Cluster, sortedCentroids: ColorList } => {
+  const sortedClusters: Cluster = []
+  const sortedCentroids: ColorList = []
   const freqList: Array<[number, number]> = []
   cl.forEach((cluster, idx) => freqList.push([cluster.length, idx]))
   freqList.sort((a, b) => b[0] - a[0])
   freqList.forEach(([_length, idx]) => {
-    sortedCl.push(cl[idx])
-    sortedCt.push(ct[idx])
+    sortedClusters.push(cl[idx])
+    sortedCentroids.push(ct[idx])
   })
 
-  return [sortedCl, sortedCt]
+  return {sortedClusters, sortedCentroids}
 }
 
 const mean = (values: number[]) => values.reduce((total, v) => total + v) / values.length
@@ -33,24 +33,6 @@ const meanPoint = (cluster: ColorList) => {
   return mPoint as Color
 }
 
-const rangeOf = (values: number[]): ValueRange => {
-  return { min: Math.min(...values), max: Math.max(...values) }
-}
-
-const rangesOf = (data: ColorList) => {
-  const ranges: Array<ValueRange> = []
-  const [ firstColor ] = data
-
-  for (let i = 0; i < firstColor.length; i++) {
-    // Select each element of the color array
-    // Find min and max of that element range
-    const values: Array<number> = data.map(c => c[i])
-    ranges.push(rangeOf(values))
-  }
-
-  return ranges
-}
-
 const euclideanDistance = (a: Color, b: Color) => {
   if (a.length !== b.length) return Infinity;
 
@@ -63,19 +45,22 @@ const euclideanDistance = (a: Color, b: Color) => {
 } 
 
 const initializeCentroidsRandomly = (data: ColorList, k: number) => {
-  const ranges = rangesOf(data)
   const centroids: ColorList = []
+  const selectedIndices: Set<number> = new Set()
 
-  while (centroids.length < k) {
-    const centroid = []
-    for (const r in ranges) {
-      // May not want to round these numbers?
-      const value = randomInt(ranges[r].min, ranges[r].max)
-      centroid.push(value)
+  for (let i = 0; i < k; i++) {
+    let index = randomInt(0, data.length - 1)
+
+    // If a random index has already been selected,
+    // choose another one
+    while (selectedIndices.has(index)) {
+      index = randomInt(0, data.length - 1)
     }
-    centroids.push(centroid as Color)
-  }
 
+    centroids.push(data[index])
+    selectedIndices.add(index)
+  }
+  
   return centroids
 }
 
@@ -119,35 +104,28 @@ const getNewCentroids = (clusters: Cluster) => {
   return centroids
 }
 
-// TODO: Add better comment explanations
-export const kMeans = (data: ColorList, k: number, iterations = 0): [Cluster, ColorList] => {
-  let clusters: Cluster, oldClusters: Cluster
-  let converged = false
-
-  let centroids = initializeCentroidsRandomly(data, k)
-
-  while (!converged) {
-    iterations++
-    oldClusters = clusters
-    clusters = clusterDataPoints(data, centroids)
-
-    // Prevent empty clusters by checking cluster length
-    if (clusters.some(c => c.length === 0)) {
-
-      // If iteration limit has not been reached
-      // try initiating the process again
-      if (iterations >= ITERATION_LIMIT) {
-        throw new Error("Unable to cluster colors into `k` groups within set iteration limit. It's likely colors in the image are too similiar to cluster into `k` groups. Try running again with a lower `k` value.")
-      } else {
-        return kMeans(data, k, iterations);
-      }
-    }
-
-    if (_.isEqual(clusters, oldClusters) || iterations >= ITERATION_LIMIT) {
-      converged = true
-      return [ clusters, centroids ]
-    }
-
-    centroids = getNewCentroids(clusters)
+export const kMeans = (data: ColorList, k: number): { clusters: Cluster, centroids: ColorList } => {
+  if (k > data.length) {
+    throw new Error('Cannot divide data list into `k` groups because `k` exceeds data length. Provide a smaller `k` value.')
   }
+
+  let previousCentroids: ColorList = []
+  let newCentroids = initializeCentroidsRandomly(data, k)
+  let clusters = clusterDataPoints(data, newCentroids)
+  let iterations = 0
+
+  while (!_.isEqual(previousCentroids, newCentroids) && iterations < ITERATION_LIMIT) {
+    previousCentroids = newCentroids
+    newCentroids = getNewCentroids(clusters)
+    clusters = clusterDataPoints(data, newCentroids)
+    iterations++
+  }
+
+  if (iterations >= ITERATION_LIMIT) {
+    throw new Error("Unable to cluster colors into `k` groups within set iteration limit. It's likely colors in the image are too similiar to cluster into `k` groups. Try running again with a lower `k` value.")
+  }
+
+  console.log(`Ran clustering with ${iterations} iterations`)
+
+  return { clusters, centroids: newCentroids }
 }
