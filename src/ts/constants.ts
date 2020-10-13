@@ -35,7 +35,7 @@ export const FLOAT_SETTINGS = [
 export const ITERATION_LIMIT = 500
 
 // Image upload scale
-export const UPLOAD_SCALE_WIDTH = 50
+export const UPLOAD_SCALE_WIDTH = 200
 
 export const config: Config = {
   increment: 0.1,

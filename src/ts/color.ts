@@ -67,10 +67,8 @@ const extractPixelData = (image: HTMLImageElement) => {
   const canvas: HTMLCanvasElement = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   const aspectRatio = image.height / image.width
-  // TODO: Try resizing the canvas based on which dimension is larger.
-  // Large images are definitely breaking this.
   canvas.width = UPLOAD_SCALE_WIDTH
-  canvas.height = aspectRatio * image.height
+  canvas.height = aspectRatio * UPLOAD_SCALE_WIDTH
 
   // Log to eventually remove
   console.log('canvas + image info', canvas, aspectRatio, image.height, image.width)
