@@ -2,7 +2,7 @@ import * as p5 from "p5";
 import * as _ from "lodash";
 import { ColorList, Color, ColorMode } from "./types";
 import { config, PALETTE_SCALE } from "./constants";
-import { findNearestCentroid } from "./clustering";
+import { euclideanDistance, findNearestCentroid } from "./clustering";
 import { scaleCanvasHeightToColors } from "./helpers";
 
 // This factory interates through a color list and returns the
@@ -14,7 +14,7 @@ export const colorReducerFactory = (originalColors: ColorList, centroids: ColorL
   return (): Color => {
     if (originalColors[colorIdx]) {
       // From the list of central colors, find the closest
-      const { centroid: newColor } = findNearestCentroid(originalColors[colorIdx], centroids)
+      const { centroid: newColor } = findNearestCentroid(originalColors[colorIdx], centroids, euclideanDistance)
       // Increment through the color array
       colorIdx++
   
