@@ -47,7 +47,7 @@ export interface ValueRange {
 
 export enum ColorMode {
   RGB = 'rgb',
-  HSV = 'hsv',
+  HSB = 'hsb',
 }
 
 export interface ColorUploadSettings {

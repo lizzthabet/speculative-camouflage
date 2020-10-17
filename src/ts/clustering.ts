@@ -1,25 +1,11 @@
 import * as _ from "lodash";
-import { Color, Cluster, ValueRange, ColorList, NearestCentroid, DistanceCalculation } from "./types";
+import { Color, Cluster, ColorList, NearestCentroid, DistanceCalculation } from "./types";
 import { randomInt } from "./helpers";
 import { ITERATION_LIMIT } from "./constants";
 
 // Clustering techniques adapted from Xander Lewis
 // https://towardsdatascience.com/extracting-colours-from-an-image-using-k-means-clustering-9616348712be
 // https://github.com/xanderlewis/colour-palettes
-
-export const sortByFrequency = (cl: Cluster, ct: ColorList): { sortedClusters: Cluster, sortedCentroids: ColorList } => {
-  const sortedClusters: Cluster = []
-  const sortedCentroids: ColorList = []
-  const freqList: Array<[number, number]> = []
-  cl.forEach((cluster, idx) => freqList.push([cluster.length, idx]))
-  freqList.sort((a, b) => b[0] - a[0])
-  freqList.forEach(([_length, idx]) => {
-    sortedClusters.push(cl[idx])
-    sortedCentroids.push(ct[idx])
-  })
-
-  return {sortedClusters, sortedCentroids}
-}
 
 const mean = (values: number[]) => values.reduce((total, v) => total + v) / values.length
 
@@ -207,46 +193,20 @@ const getNewCentroids = (clusters: Cluster) => {
   return centroids
 }
 
-export const kMeans = (data: ColorList, k: number): { clusters: Cluster, centroids: ColorList } => {
+export const kMeans = (data: ColorList, k: number, distance: DistanceCalculation): { clusters: Cluster, centroids: ColorList } => {
   if (k > data.length) {
     throw new Error('Cannot divide data list into `k` groups because `k` exceeds data length. Provide a smaller `k` value.')
   }
 
   let previousCentroids: ColorList = []
   let newCentroids = initializeCentroidsRandomly(data, k)
-  let clusters = clusterDataPoints(data, newCentroids, euclideanDistance)
+  let clusters = clusterDataPoints(data, newCentroids, distance)
   let iterations = 0
 
   while (!_.isEqual(previousCentroids, newCentroids) && iterations < ITERATION_LIMIT) {
     previousCentroids = newCentroids
     newCentroids = getNewCentroids(clusters)
-    clusters = clusterDataPoints(data, newCentroids, euclideanDistance)
-    iterations++
-  }
-
-  if (iterations >= ITERATION_LIMIT) {
-    throw new Error("Unable to cluster colors into `k` groups within set iteration limit. It's likely colors in the image are too similiar to cluster into `k` groups. Try running again with a lower `k` value.")
-  }
-
-  console.log(`Ran clustering with ${iterations} iterations`)
-
-  return { clusters, centroids: newCentroids }
-}
-
-export const kMeansTest = (data: ColorList, k: number): { clusters: Cluster, centroids: ColorList } => {
-  if (k > data.length) {
-    throw new Error('Cannot divide data list into `k` groups because `k` exceeds data length. Provide a smaller `k` value.')
-  }
-
-  let previousCentroids: ColorList = []
-  let newCentroids = initializeCentroidsRandomly(data, k)
-  let clusters = clusterDataPoints(data, newCentroids, deltaE00Distance)
-  let iterations = 0
-
-  while (!_.isEqual(previousCentroids, newCentroids) && iterations < ITERATION_LIMIT) {
-    previousCentroids = newCentroids
-    newCentroids = getNewCentroids(clusters)
-    clusters = clusterDataPoints(data, newCentroids, deltaE00Distance)
+    clusters = clusterDataPoints(data, newCentroids, distance)
     iterations++
   }
 

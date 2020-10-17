@@ -8,6 +8,8 @@ export const randomInt = (x: number, y: number) => Math.floor(Math.random() * (y
 
 export const randomP = (p: p5, threshhold: number) => p.random(-threshhold, threshhold)
 
+export const trimNumber = (n: number, decimalPlace: number) => parseFloat(n.toFixed(decimalPlace))
+
 // Could probably make this more modular / functional
 export const addRandomToOffset = (p: p5, xoff: number, yoff: number, threshhold: number) => {
   const addToX = randomP(p, threshhold)
@@ -20,7 +22,7 @@ const mapXToY = (xStart: number, xEnd: number, yStart: number, yEnd: number) => 
   return yStart + scale * (n - xStart)
 }
 
-// TODO: Add explanation for why values are mapped and clapped at certain ranges
+// TODO: Add explanation for why values are mapped and clamped at certain ranges
 export const mapBrightness = mapXToY(0, 100, 45, 100)
 
 export const mapSaturation = mapXToY(0, 100, 0, 70)

@@ -73,7 +73,7 @@ export const drawColorsOnCanvasFactory = ({
   };
 
   p.draw = () => {
-    if (colorMode === ColorMode.HSV) {
+    if (colorMode === ColorMode.HSB) {
       p.colorMode(p.HSB)
     } else {
       p.colorMode(p.RGB)
@@ -107,6 +107,35 @@ export const drawColorsOnCanvasFactory = ({
 
     p.noLoop();
   };
+}
+
+export function produceSketchFromColors({
+  canvasWidth,
+  colorMode,
+  colors,
+  colorPalette,
+} : {
+  canvasWidth: number,
+  colorMode: ColorMode,
+  colors: ColorList,
+  colorPalette?: ColorList,
+}) : (p: p5) => void {
+  const colorProducer = colorListIteratorFactory(colors)
+
+  let colorPaletteProducer: () => Color
+  if (colorPalette) {
+    colorPaletteProducer = colorListIteratorFactory(colorPalette)
+  }
+
+  const sketch = drawColorsOnCanvasFactory({
+    colorListLength: colors.length,
+    colorMode,
+    colorPaletteProducer,
+    colorProducer,
+    canvasWidth,
+  })
+
+  return sketch
 }
 
 // Nice TODOs
