@@ -37,6 +37,9 @@ export const ITERATION_LIMIT = 500
 // Image upload scale
 export const UPLOAD_SCALE_WIDTH = 200
 
+// Pattern generation resolution
+export const DEFAULT_RESOLUTION = 72
+
 export const config: Config = {
   increment: 0.1,
   scale: 5,

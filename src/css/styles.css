@@ -18,12 +18,12 @@ h3 {
   margin-top: 0;
 }
 
-label, input {
+label, input, select {
   display: block;
   margin: 0.5rem 0;
 }
 
-input {
+input, select {
   margin-bottom: 1.3rem;
 }
 

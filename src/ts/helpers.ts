@@ -1,6 +1,6 @@
 import * as p5 from 'p5';
 import { Setting } from './types';
-import { FLOAT_SETTINGS } from './constants';
+import { DEFAULT_RESOLUTION, FLOAT_SETTINGS } from './constants';
 
 export const parseIntOrFloat = (setting: Setting, value: string) => FLOAT_SETTINGS.includes(setting) ? parseFloat(value) : parseInt(value, 10)
 
@@ -36,3 +36,5 @@ export const perlinBri = (p: p5, xoff: number, yoff: number) => mapBrightness(p.
 export const scaleCanvasHeightToColors = (colorTotal: number, colorScale: number, canvasWidth: number) => Math.ceil(
   colorTotal * Math.pow(colorScale, 2) / canvasWidth
 )
+
+export const inchesToPixels = (measurementInInches: number, resolution = DEFAULT_RESOLUTION) => measurementInInches * resolution
