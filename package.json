@@ -9,7 +9,7 @@
     "webpack-build": "webpack --config webpack.prod.js",
     "webpack-dev": "webpack-dev-server --config webpack.dev.js"
   },
-  "author": "derkalaender",
+  "author": "lizzthabet",
   "license": "MIT",
   "dependencies": {
     "lodash": "^4.17.19",
