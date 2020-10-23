@@ -15,6 +15,8 @@ figure {
 }
 
 img {
+  box-shadow: 0.6rem 0.6rem 1rem #a2a2a2;
+  display: block;
   margin-top: 2rem;
   max-width: 100%;
 }

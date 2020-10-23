@@ -173,7 +173,7 @@ function drawNoisePatternWithImageColors({
   })
 
   const sketchLabel = document.createElement('h3')
-  sketchLabel.innerHTML = 'Generated pattern using image palette'
+  sketchLabel.innerHTML = 'Generated pattern using source image palette'
   canvasWrapper.appendChild(sketchLabel)
 
   sketchInstances.palette = new p5(mappedSketch, canvasWrapper)

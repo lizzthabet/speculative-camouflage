@@ -20,7 +20,7 @@ module.exports = merge(common, {
         parallel: true,
         terserOptions: {
           compress: {
-            drop_console: true,
+            drop_console: false,
           },
         },
       }),
