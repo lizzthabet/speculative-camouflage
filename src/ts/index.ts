@@ -59,7 +59,7 @@ window.addEventListener('load', () => {
         const patternHeight = inchesToPixels(parseInt(patternHeightInput.value), resolution)
         const patternWidth = inchesToPixels(parseInt(patternWidthInput.value), resolution)
 
-        await generatePatternWithUploadedColors({
+        await generatePatternFromUploadedImage({
           canvasWrapper: colorPaletteCanvas,
           colorMode,
           files,
@@ -285,11 +285,11 @@ function visualizeMappedSortedColors() {
   //   colorPaletteProducer,
   //   colorProducer: mappedSortedColorProducer,
   // })
-
+  
   // new p5(mappedSortedSketch, colorPaletteCanvas)
 }
 
-async function generatePatternWithUploadedColors({
+async function generatePatternFromUploadedImage({
   colorMode,
   canvasWrapper,
   files,

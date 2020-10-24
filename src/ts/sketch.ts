@@ -149,7 +149,3 @@ export function produceSketchFromColors({
 
   return sketch
 }
-
-// Nice TODOs
-// - Add a loading state when processing colors
-// - Add logic to retry the color palette generation if the diff between centroids is below a certain threshold?
