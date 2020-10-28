@@ -1,17 +1,16 @@
 {
   "presets": [
-    "@babel/typescript",
+    "@babel/preset-typescript",
     [
       "@babel/preset-env", {
         "targets": {
+          "esmodules": true,
           "node": "current"
         }
       }
     ]
   ],
   "plugins": [
-    "syntax-trailing-function-commas",
-    "@babel/proposal-class-properties",
-    "@babel/proposal-object-rest-spread"
+    "syntax-trailing-function-commas"
   ]
 }
