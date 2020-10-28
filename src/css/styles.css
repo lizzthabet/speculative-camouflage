@@ -1,9 +1,9 @@
 body {
-  background-color: #d3d3d3;
+  background-color: #f3f3f3;
   color: #333;
-  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.5rem;
+  line-height: 1.5;
   margin: 2rem;
-  text-transform: uppercase;
 }
 
 section {
@@ -14,8 +14,15 @@ figure {
   margin: 1rem 0;
 }
 
-h3 {
-  margin-top: 0;
+img {
+  box-shadow: 0.6rem 0.6rem 1rem #a2a2a2;
+  display: block;
+  margin-top: 2rem;
+  max-width: 100%;
+}
+
+h2 {
+  font-weight: normal;
 }
 
 label, input, select {
@@ -24,27 +31,19 @@ label, input, select {
 }
 
 input, select {
-  margin-bottom: 1.3rem;
+  margin-bottom: 2.3rem;
+  margin-top: 1rem;
+}
+
+input, select, button {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.5rem;
+  text-transform: uppercase;
 }
 
 button {
   cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
   margin: 0.5rem 0;
   padding: 0.5rem;
-  text-transform: inherit;
   display: block;
-}
-
-.columns {
-  display: flex;
-}
-
-.columns > section {
-  margin-top: 0;
-}
-
-.columns > section + section {
-  margin-left: 1.5rem;
 }

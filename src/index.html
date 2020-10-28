@@ -10,26 +10,20 @@
   </head>
   <link rel="stylesheet" type="text/css" href="styles.css">
   <body>
-    <h1>Color mapping from uploaded image to source pattern</h1>
-
-    <h2>Source pattern: fractal-like perlin noise in HSB</h2>
-    <figure id="camo"></figure>
-
-    <button id="cluster-colors">Cluster & reduce colors</button>
-
-    <h2>Source pattern: color palette w sorted colors</h2>
-    <figure id="cluster"></figure>
-
-    <h2>Source pattern: reduced colors</h2>
-    <figure id="reduce"></figure>
-
+    <h1>Speculative camouflage generator</h1>
+    <h2><em>A prototype for a wearable pattern generator that builds camouflage-inspired designs</em></h2>
+    <p>
+       Right now, this tool only generates a single design: a pixelated fractal noise pattern (generally called a multiscale pattern), using the colors from an uploaded image. In the future, it may expand to generate shape-disruptive patterns, too. The design for the noise pattern is loosely based on <a href="https://www.academia.edu/21209710/Urban_camouflage_assessment_through_visual_search_and_computational_saliency" target="_blank">a scientific paper published in 2013</a>. This tool's purpose is to generate large images of patterns that can be used for textiles, clothing, and other surfaces.
+       <img src="img/subway-example.png" />
+    </p>
+    <p>When a pattern is successfully generated, you can double-click on any canvas to save the outputted images.</p>
     <form id="upload-image-form" autocomplete="off">
-      <h2>Generate pattern with source image colors</h2>
+      <h2>Generate a pattern</h2>
 
       <label for="file-upload">Upload a source image</label>
       <input type="file" id="file-upload" multiple="false" accept="image/*" required />
 
-      <label for="k-means">Number of colors to extract</label>
+      <label for="k-means">Number of colors to extract from source</label>
       <input type="number" id="k-means" min="2" max="32" step="1" value="10" required />
 
       <label for="color-mode">Color mode output</label>
@@ -47,10 +41,12 @@
       <label for="resolution">Resolution (pixels per inch)</label>
       <input type="number" id="resolution" min="72" max="300" step="1" value="72" required />
 
-      <button id="upload-image-submit" type="submit">Create pattern</button>
+      <button id="upload-image-submit" type="submit">Create pattern*</button>
+      <p>*Note: this may take a couple minutes! Debugging logs are available in the console.</p>
     </form>
 
-    <figure id="image"></figure>
+    <figure id="canvas-wrapper"></figure>
+
     <script type="text/javascript" src="bundle.js"></script>
   </body>
 </html>

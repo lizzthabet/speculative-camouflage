@@ -1,7 +1,7 @@
 import * as p5 from "p5";
 import { ColorMode, ColorList, Cluster } from "./types";
 import { DEFAULT_CANVAS_WIDTH } from "./constants";
-import { kMeans, euclideanDistance, deltaE00Distance } from "./clustering";
+import { kMeans, deltaE00Distance } from "./clustering";
 import {
   getColorsFromUploadedImage,
   rgbToLab,
@@ -14,29 +14,15 @@ import {
   sortByFrequency
 } from './color'
 import { generateNoisePattern } from "./noise-pattern";
-import { drawColorsOnCanvasFactory, colorReducerFactory, produceSketchFromColors } from "./sketch";
+import { produceSketchFromColors } from "./sketch";
 import { inchesToPixels } from "./helpers";
 
 window.addEventListener('load', () => {
   // Grab the elements that each canvas sketch will be attached to
-  const originalPatternCanvas: HTMLElement = document.getElementById('camo')
-  const clusteredColorsCanvas: HTMLElement = document.getElementById('cluster')
-  const reducedColorsCanvas: HTMLElement = document.getElementById('reduce')
-  const colorPaletteCanvas: HTMLElement = document.getElementById('image')
+  const colorPaletteCanvas: HTMLElement = document.getElementById('canvas-wrapper')
 
   // Grab the UI elements that will be interacted with
-  const clusterColorsButton = document.getElementById('cluster-colors')
   const imageUploadForm = document.getElementById('upload-image-form')
-
-  // Draw the original noise pattern
-  drawNoisePattern(originalPatternCanvas)
-
-  // Cluster and reduce colors of noise pattern when cluster button is clicked
-  if (clusterColorsButton) {
-    clusterColorsButton.addEventListener('click', () => {
-      clusterAndReduceNoiseColors(clusteredColorsCanvas, reducedColorsCanvas)
-    })
-  }
 
   // Extract and draw the color palette from an uploaded image based on form data
   if (imageUploadForm) {
@@ -75,74 +61,6 @@ window.addEventListener('load', () => {
   }
 })
 
-function drawNoisePattern(canvasWrapper: HTMLElement) {
-  const noisePatternColors = generateNoisePattern()
-  const sketch = produceSketchFromColors({
-    canvasName: 'noise-pattern-sample',
-    canvasWidth: DEFAULT_CANVAS_WIDTH,
-    colors: noisePatternColors,
-    colorMode: ColorMode.HSB,
-  })
-
-  return new p5(sketch, canvasWrapper)
-}
-
-function clusterAndReduceNoiseColors(clusterCanvas: HTMLElement, reduceCanvas: HTMLElement) {
-  const colors = generateNoisePattern()
-
-  // Convert colors to LAB space
-  const labColors = colors.map(c => hsbToLab(c))
-
-  // Use the new kmeans calculation
-  const { clusters, centroids } = kMeans(labColors, 18, deltaE00Distance)
-  const { colors: sortedLabColors, centroids: sortedLabCentroids } = flattenColors({ clusters, centroids, sortColors: true })
-  
-  // Convert colors back to HSB (after flattened)
-  const sortedColors = sortedLabColors.map(c => labToHsb(c))
-  const sortedCentroids = sortedLabCentroids.map(c => labToHsb(c))
-
-  const sketchSortedColors = produceSketchFromColors({
-    canvasName: 'noise-pattern-sample-sorted-colors',
-    canvasWidth: DEFAULT_CANVAS_WIDTH,
-    colors: sortedColors,
-    colorMode: ColorMode.HSB,
-    colorPalette: sortedCentroids
-  })
-
-  new p5(sketchSortedColors, clusterCanvas)
-
-  const colorReducer = colorReducerFactory(colors, sortedCentroids)
-  const sketchReducedColors = drawColorsOnCanvasFactory({
-    canvasName: 'noise-pattern-sample-reduced-colors',
-    colorListLength: colors.length,
-    colorMode: ColorMode.HSB,
-    colorProducer: colorReducer,
-    canvasWidth: DEFAULT_CANVAS_WIDTH,
-  })
-
-  return new p5(sketchReducedColors, reduceCanvas)
-}
-
-function viewColorPaletteWithEuclideanDistance(colors: ColorList, kMeansValue: number, colorMode: ColorMode, canvas: HTMLElement) {
-  const { clusters, centroids } = kMeans(colors, kMeansValue, euclideanDistance)
-
-  console.log('Clustering complete - euclidean')
-
-  const { colors: sortedColors, centroids: sortedCentroids } = flattenColors({ clusters, centroids, sortColors: true })
-
-  const sketchSortedColors = produceSketchFromColors({
-    canvasName: 'uploaded-image-euclidean-sorted-colors',
-    canvasWidth: DEFAULT_CANVAS_WIDTH,
-    colorMode,
-    colors: sortedColors,
-    colorPalette: sortedCentroids,
-  })
-
-  const p5Instance = new p5(sketchSortedColors, canvas)
-
-  return { clusters, centroids, sortedColors, sortedCentroids, p5Instance }
-}
-
 function viewColorPalette(colors: ColorList, kMeansValue: number, colorMode: ColorMode, canvas: HTMLElement) {
   // Convert colors to LAB space for creating a color palette
   const labColors = colors.map(c => rgbToLab(c))
@@ -167,7 +85,11 @@ function viewColorPalette(colors: ColorList, kMeansValue: number, colorMode: Col
     colorPalette: rgbFromLabCentroids,
     colorMode: ColorMode.RGB,
     canvasWidth: DEFAULT_CANVAS_WIDTH
-   })
+  })
+
+  const sketchLabel = document.createElement('h3')
+  sketchLabel.innerHTML = `Uploaded image palette with ${kMeansValue} colors`
+  canvas.appendChild(sketchLabel)
 
   const p5Instance = new p5(labSketchSortedColors, canvas)
 
@@ -227,6 +149,10 @@ function drawNoisePatternWithImageColors({
       colorMode: ColorMode.RGB
     })
 
+    const sketchLabel = document.createElement('h3')
+    sketchLabel.innerHTML = 'Generated pattern using source image colors'
+    canvasWrapper.appendChild(sketchLabel)
+
     sketchInstances.originalColors = new p5(mappedSketch, canvasWrapper)
   }
 
@@ -246,17 +172,11 @@ function drawNoisePatternWithImageColors({
     colorMode: ColorMode.RGB
   })
 
+  const sketchLabel = document.createElement('h3')
+  sketchLabel.innerHTML = 'Generated pattern using source image palette'
+  canvasWrapper.appendChild(sketchLabel)
+
   sketchInstances.palette = new p5(mappedSketch, canvasWrapper)
-
-  // For debugging, display the original noise image
-  // const noiseSketch = produceSketchFromColors({
-  //   canvasName: `noise-pattern-using-palette-${patternWidth}x${patternHeight}`,
-  //   colors: noiseColors,
-  //   canvasWidth: patternWidth,
-  //   colorMode: ColorMode.HSB
-  // })
-
-  // sketchInstances.noise = new p5(noiseSketch, canvasWrapper)
 
   return sketchInstances
 } 

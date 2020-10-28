@@ -1,6 +1,7 @@
 # Dev stuff
 node_modules/
 package-lock.json
+dist/
 
 # WIP files
 *.pdf
