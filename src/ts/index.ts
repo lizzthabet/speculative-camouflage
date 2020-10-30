@@ -61,9 +61,13 @@ window.addEventListener('load', () => {
   }
 })
 
-function viewColorPalette(colors: ColorList, kMeansValue: number, colorMode: ColorMode, canvas: HTMLElement) {
+function viewColorPalette(originalColors: ColorList, kMeansValue: number, colorMode: ColorMode, canvas: HTMLElement) {
+  // Determine which color converters to use
+  const colorToLab = colorMode === ColorMode.RGB ? rgbToLab : hsbToLab
+  const labToColor = colorMode === ColorMode.RGB ? labToRgb : labToHsb
+
   // Convert colors to LAB space for creating a color palette
-  const labColors = colors.map(c => rgbToLab(c))
+  const labColors = originalColors.map(c => colorToLab(c))
   const { clusters: labClusters, centroids: labCentroids } = kMeans(labColors, kMeansValue, deltaE00Distance)
 
   console.log('Clustering complete - perceptual')
@@ -74,15 +78,15 @@ function viewColorPalette(colors: ColorList, kMeansValue: number, colorMode: Col
     sortedClusters: sortedLabClusters
   } = flattenColors({ clusters: labClusters, centroids: labCentroids, sortColors: true })
 
-  // Convert LAB colors back to RGB
-  const rgbFromLabColors = sortedLabColors.map(c => labToRgb(c))
-  const rgbFromLabCentroids = sortedLabCentroids.map(c => labToRgb(c))
-  const rgbFromLabClusters = sortedLabClusters.map(cluster => cluster.map(c => labToRgb(c)))
+  // Convert LAB colors back to original color mode
+  const sortedColors = sortedLabColors.map(c => labToColor(c))
+  const sortedCentroids = sortedLabCentroids.map(c => labToColor(c))
+  const sortedClusters = sortedLabClusters.map(cluster => cluster.map(c => labToColor(c)))
 
   const labSketchSortedColors = produceSketchFromColors({
     canvasName: 'uploaded-image-sorted-colors',
-    colors: rgbFromLabColors,
-    colorPalette: rgbFromLabCentroids,
+    colors: sortedColors,
+    colorPalette: sortedCentroids,
     colorMode: ColorMode.RGB,
     canvasWidth: DEFAULT_CANVAS_WIDTH
   })
@@ -93,7 +97,7 @@ function viewColorPalette(colors: ColorList, kMeansValue: number, colorMode: Col
 
   const p5Instance = new p5(labSketchSortedColors, canvas)
 
-  return { sortedClusters: rgbFromLabClusters, sortedColors: rgbFromLabColors, sortedCentroids: rgbFromLabCentroids, p5Instance }
+  return { sortedClusters, sortedColors, sortedCentroids, p5Instance }
 }
 
 function drawNoisePatternWithImageColors({
