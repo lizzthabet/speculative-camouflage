@@ -27,6 +27,7 @@
     "babel-plugin-syntax-trailing-function-commas": "^6.22.0",
     "browser-sync": "^2.26.13",
     "clean-webpack-plugin": "^2.0.1",
+    "del": "^6.0.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-prettier": "^3.0.1",

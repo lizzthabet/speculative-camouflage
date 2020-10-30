@@ -1,10 +1,12 @@
 const { src, dest, series, parallel, watch } = require('gulp')
 const webpack = require('webpack')
-const bs = require('browser-sync');
+const browserSync = require('browser-sync').create()
+const del = require('del')
 const webpackDevConfig = require('./webpack.dev.js')
 const webpackProdConfig = require('./webpack.prod.js')
 
-const browserSync = bs.create()
+// Clean distribution directory
+const clean = () => del('dist/**')
 
 // Bundling TS
 const bundle = (config) => () => {
@@ -69,6 +71,7 @@ const productionBuild = series(
   parallel(css, assets, html),
 )
 
+exports.clean = clean
 exports.copy = parallel(css, assets, html)
 exports.build = productionBuild
 exports.serve = serve
