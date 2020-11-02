@@ -16,7 +16,40 @@ import {
 import { generateNoisePattern } from "./noise-pattern";
 import { produceSketchFromColors } from "./sketch";
 
-function viewColorPalette(originalColors: ColorList, kMeansValue: number, colorMode: ColorMode, canvasWrapper: HTMLElement) {
+function createCanvasWrapper(id: string, title?: string) {
+  const wrapper = document.createElement('figure')
+  wrapper.id = id
+
+  if (title) {
+    const wrapperTitle = document.createElement('h3')
+    wrapperTitle.innerHTML = title
+    wrapper.appendChild(wrapperTitle)
+  }
+
+  document.body.appendChild(wrapper)
+
+  return wrapper
+}
+
+function createSaveButton(canvasWrapper: HTMLElement, p5Instance: p5, filename: string) {
+  const button = document.createElement('button')
+  button.innerHTML = `Save <span class="sr-only">${canvasWrapper.id}</span> pattern`
+
+  console.log(p5Instance)
+  button.addEventListener('click', () => p5Instance.saveCanvas(filename, 'png'))
+  button.addEventListener('keypress', (event: KeyboardEvent) => {
+    console.log('button keypress', event)
+    if (event.key === 'Enter') {
+      p5Instance.saveCanvas(filename, 'png')
+    }
+  })
+
+  canvasWrapper.appendChild(button)
+
+  return button
+}
+
+function viewColorPalette(originalColors: ColorList, kMeansValue: number, colorMode: ColorMode) {
   // Determine which color converters to use
   const colorToLab = colorMode === ColorMode.RGB ? rgbToLab : hsbToLab
   const labToColor = colorMode === ColorMode.RGB ? labToRgb : labToHsb
@@ -39,24 +72,25 @@ function viewColorPalette(originalColors: ColorList, kMeansValue: number, colorM
   const sortedClusters = sortedLabClusters.map(cluster => cluster.map(c => labToColor(c)))
 
   const labSketchSortedColors = produceSketchFromColors({
-    canvasName: 'uploaded-image-sorted-colors',
     colors: sortedColors,
     colorPalette: sortedCentroids,
     colorMode: ColorMode.RGB,
     canvasWidth: DEFAULT_CANVAS_WIDTH
   })
 
-  const sketchLabel = document.createElement('h3')
-  sketchLabel.innerHTML = `Uploaded image palette with ${kMeansValue} colors`
-  canvasWrapper.appendChild(sketchLabel)
+  const wrapper = createCanvasWrapper(
+    'image-color-palette',
+    `Uploaded image palette with ${kMeansValue} colors`
+  )
 
-  const p5Instance = new p5(labSketchSortedColors, canvasWrapper)
+  const p5Instance = new p5(labSketchSortedColors, wrapper)
+
+  createSaveButton(wrapper, p5Instance, wrapper.id)
 
   return { sortedClusters, sortedColors, sortedCentroids, p5Instance }
 }
 
 function drawNoisePatternWithImageColors({
-  canvasWrapper,
   imageCentroids,
   imageClusters,
   kMeansValue,
@@ -64,7 +98,6 @@ function drawNoisePatternWithImageColors({
   patternHeight,
   patternWidth,
 }: {
-  canvasWrapper: HTMLElement,
   imageCentroids: ColorList,
   imageClusters: Cluster,
   kMeansValue: number,
@@ -72,7 +105,11 @@ function drawNoisePatternWithImageColors({
   patternHeight: number,
   patternWidth: number,
 }) {
-  const sketchInstances : { [key: string]: p5 }= {}
+  const sketchInstances : { [key: string]: p5 } = {}
+  const wrapper = createCanvasWrapper(
+    'noise pattern',
+    'Generated pattern using source image palette'
+  )
 
   // Generate the noise pattern that will have its color palette swapped with an uploaded image
   const noiseColors = generateNoisePattern(patternWidth, patternHeight)
@@ -102,17 +139,23 @@ function drawNoisePatternWithImageColors({
     )
 
     const mappedSketch = produceSketchFromColors({
-      canvasName: `noise-pattern-using-original-colors-${patternWidth}x${patternHeight}`,
       colors: mappedColors,
       canvasWidth: patternWidth,
       colorMode: ColorMode.RGB
     })
 
-    const sketchLabel = document.createElement('h3')
-    sketchLabel.innerHTML = 'Generated pattern using source image colors'
-    canvasWrapper.appendChild(sketchLabel)
+    const originalColorsWrapper = createCanvasWrapper(
+      'noise-pattern-using-original-colors',
+      'Generated pattern using source image colors'
+    )
 
-    sketchInstances.originalColors = new p5(mappedSketch, canvasWrapper)
+    sketchInstances.originalColors = new p5(mappedSketch, originalColorsWrapper)
+
+    createSaveButton(
+      originalColorsWrapper,
+      sketchInstances.originalColors,
+      `noise-pattern-using-original-colors-${patternWidth}x${patternHeight}`
+    )
   }
 
   // Map using the palette colors from the image
@@ -125,31 +168,30 @@ function drawNoisePatternWithImageColors({
   )
 
   const mappedSketch = produceSketchFromColors({
-    canvasName: `noise-pattern-using-palette-${patternWidth}x${patternHeight}`,
     colors: mappedColors,
     canvasWidth: patternWidth,
     colorMode: ColorMode.RGB
   })
 
-  const sketchLabel = document.createElement('h3')
-  sketchLabel.innerHTML = 'Generated pattern using source image palette'
-  canvasWrapper.appendChild(sketchLabel)
+  sketchInstances.palette = new p5(mappedSketch, wrapper)
 
-  sketchInstances.palette = new p5(mappedSketch, canvasWrapper)
+  createSaveButton(
+    wrapper,
+    sketchInstances.palette,
+    `noise-pattern-${patternWidth}x${patternHeight}`
+  )
 
   return sketchInstances
 } 
 
 export async function generatePatternFromUploadedImage({
   colorMode,
-  canvasWrapper,
   files,
   kMeansValue,
   patternHeight,
   patternWidth,
 }: {
   colorMode: ColorMode,
-  canvasWrapper: HTMLElement,
   files: FileList,
   kMeansValue: number,
   patternHeight: number,
@@ -174,7 +216,7 @@ export async function generatePatternFromUploadedImage({
   const {
     sortedCentroids: sortedImageCentroids,
     sortedClusters: sortedImageClusters
-  } = viewColorPalette(colors, kMeansValue, colorMode, canvasWrapper)
+  } = viewColorPalette(colors, kMeansValue, colorMode)
 
   /**
    * Color palette swapping!
@@ -185,7 +227,6 @@ export async function generatePatternFromUploadedImage({
 
   // Draw the pattern with colors from the original image's palette
   drawNoisePatternWithImageColors({
-    canvasWrapper,
     imageCentroids: sortedImageCentroids,
     imageClusters: sortedImageClusters,
     kMeansValue,
@@ -196,9 +237,6 @@ export async function generatePatternFromUploadedImage({
 
   /**
    * Next steps:
-   * - Create wrapper elements with unique ids via JS, instead of grabbing them from the DOM, so each one can have event listeners, etc., attached to them and make it easier to save individual canvases in the future
-   *    ie: const elementToWrapCanvas = document.createElement('figure')
-   *        elementToWrapCanvas.id = 'some-id'
    * - Consider when color mapping will take place and if you want to support multiple distance functions (maybe there are color clustering functions that take a source color mode and a comparison color mode, or maybe the colors become { rgb/hsb, lab } shape)
    * - Consider adding a global state to keep track of color palettes, clusters, centroids of uploaded images; this way, multiple images can be uploaded and the same noise pattern (if it has the same dimensions) can be used
    */

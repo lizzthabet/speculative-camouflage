@@ -45,14 +45,12 @@ export const colorListIteratorFactory = (colorList: ColorList) => {
 }
 
 export const drawColorsOnCanvasFactory = ({
-  canvasName,
   canvasWidth,
   colorListLength,
   colorMode,
   colorPaletteProducer,
   colorProducer,
 }: {
-  canvasName: string,
   canvasWidth: number,
   colorListLength: number,
   colorMode: ColorMode,
@@ -109,23 +107,14 @@ export const drawColorsOnCanvasFactory = ({
 
     p.noLoop();
   };
-
-  // Quick and hacky way to save all canvases when one is clicked on
-  p.doubleClicked = (event: MouseEvent) => {
-    if ((event.target as HTMLElement).tagName.toLowerCase() === 'canvas') {
-      p.saveCanvas(canvasName, 'png')
-    }
-  }
 }
 
 export function produceSketchFromColors({
-  canvasName,
   canvasWidth,
   colorMode,
   colors,
   colorPalette,
 } : {
-  canvasName: string,
   canvasWidth: number,
   colorMode: ColorMode,
   colors: ColorList,
@@ -143,7 +132,6 @@ export function produceSketchFromColors({
     colorMode,
     colorPaletteProducer,
     colorProducer,
-    canvasName,
     canvasWidth,
   })
 

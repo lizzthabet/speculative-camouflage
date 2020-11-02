@@ -9,7 +9,7 @@ const EMPTY_SKETCH = (p: p5) => {
   p.draw = () => {}
 }
 
-const p = new p5(EMPTY_SKETCH)
+const p = new p5(EMPTY_SKETCH, document.createElement('div'))
 
 // Generate the color data for the noise pattern
 export const generateNoisePattern = (

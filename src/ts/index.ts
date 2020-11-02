@@ -4,9 +4,6 @@ import { inchesToPixels } from "./helpers";
 import { DEFAULT_RESOLUTION } from "./constants";
 
 window.addEventListener('load', () => {
-  // Grab the elements that each canvas sketch will be attached to
-  const colorPaletteCanvas: HTMLElement = document.getElementById('canvas-wrapper')
-
   // Grab the UI elements that will be interacted with
   const imageUploadForm = document.getElementById('upload-image-form')
 
@@ -31,7 +28,6 @@ window.addEventListener('load', () => {
         const patternWidth = inchesToPixels(parseInt(patternWidthInput.value), resolution)
 
         await generatePatternFromUploadedImage({
-          canvasWrapper: colorPaletteCanvas,
           colorMode,
           files,
           kMeansValue,
