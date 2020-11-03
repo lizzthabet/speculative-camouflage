@@ -1,4 +1,4 @@
-import { ColorMode } from "./types";
+import { ColorSpace } from "./types";
 import { generatePatternFromUploadedImage } from "./core";
 import { inchesToPixels } from "./helpers";
 import { DEFAULT_RESOLUTION } from "./constants";
@@ -21,7 +21,7 @@ window.addEventListener('load', () => {
         const patternWidthInput = formElements.namedItem('pattern-width') as HTMLInputElement
 
         const files = fileInput.files as FileList
-        const colorMode = colorModeInput.value as ColorMode
+        const colorMode = colorModeInput.value as ColorSpace
         const kMeansValue = parseInt(kMeansInput.value)
         const resolution = DEFAULT_RESOLUTION
         const patternHeight = inchesToPixels(parseInt(patternHeightInput.value), resolution)

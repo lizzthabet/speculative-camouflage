@@ -1,6 +1,6 @@
 import * as p5 from "p5";
 import * as _ from "lodash";
-import { ColorList, Color, ColorMode } from "./types";
+import { ColorList, Color, ColorSpace } from "./types";
 import { config, PALETTE_SCALE } from "./constants";
 import { euclideanDistance, findNearestCentroid } from "./clustering";
 import { scaleCanvasHeightToColors } from "./helpers";
@@ -53,7 +53,7 @@ export const drawColorsOnCanvasFactory = ({
 }: {
   canvasWidth: number,
   colorListLength: number,
-  colorMode: ColorMode,
+  colorMode: ColorSpace,
   colorPaletteProducer?: () => Color
   colorProducer: () => Color,
 }) => (p: p5) => {
@@ -73,7 +73,7 @@ export const drawColorsOnCanvasFactory = ({
   };
 
   p.draw = () => {
-    if (colorMode === ColorMode.HSB) {
+    if (colorMode === ColorSpace.HSB) {
       p.colorMode(p.HSB)
     } else {
       p.colorMode(p.RGB)
@@ -116,7 +116,7 @@ export function produceSketchFromColors({
   colorPalette,
 } : {
   canvasWidth: number,
-  colorMode: ColorMode,
+  colorMode: ColorSpace,
   colors: ColorList,
   colorPalette?: ColorList,
 }) : (p: p5) => void {

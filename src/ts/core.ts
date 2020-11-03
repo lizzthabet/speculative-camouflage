@@ -1,5 +1,5 @@
 import * as p5 from "p5";
-import { ColorMode, ColorList, Cluster } from "./types";
+import { ColorSpace, ColorList, Cluster } from "./types";
 import { DEFAULT_CANVAS_WIDTH } from "./constants";
 import { kMeans, deltaE00Distance } from "./clustering";
 import {
@@ -49,10 +49,10 @@ function createSaveButton(canvasWrapper: HTMLElement, p5Instance: p5, filename: 
   return button
 }
 
-function viewColorPalette(originalColors: ColorList, kMeansValue: number, colorMode: ColorMode) {
+function viewColorPalette(originalColors: ColorList, kMeansValue: number, colorMode: ColorSpace) {
   // Determine which color converters to use
-  const colorToLab = colorMode === ColorMode.RGB ? rgbToLab : hsbToLab
-  const labToColor = colorMode === ColorMode.RGB ? labToRgb : labToHsb
+  const colorToLab = colorMode === ColorSpace.RGB ? rgbToLab : hsbToLab
+  const labToColor = colorMode === ColorSpace.RGB ? labToRgb : labToHsb
 
   // Convert colors to LAB space for creating a color palette
   const labColors = originalColors.map(c => colorToLab(c))
@@ -74,7 +74,7 @@ function viewColorPalette(originalColors: ColorList, kMeansValue: number, colorM
   const labSketchSortedColors = produceSketchFromColors({
     colors: sortedColors,
     colorPalette: sortedCentroids,
-    colorMode: ColorMode.RGB,
+    colorMode: ColorSpace.RGB,
     canvasWidth: DEFAULT_CANVAS_WIDTH
   })
 
@@ -141,7 +141,7 @@ function drawNoisePatternWithImageColors({
     const mappedSketch = produceSketchFromColors({
       colors: mappedColors,
       canvasWidth: patternWidth,
-      colorMode: ColorMode.RGB
+      colorMode: ColorSpace.RGB
     })
 
     const originalColorsWrapper = createCanvasWrapper(
@@ -170,7 +170,7 @@ function drawNoisePatternWithImageColors({
   const mappedSketch = produceSketchFromColors({
     colors: mappedColors,
     canvasWidth: patternWidth,
-    colorMode: ColorMode.RGB
+    colorMode: ColorSpace.RGB
   })
 
   sketchInstances.palette = new p5(mappedSketch, wrapper)
@@ -191,7 +191,7 @@ export async function generatePatternFromUploadedImage({
   patternHeight,
   patternWidth,
 }: {
-  colorMode: ColorMode,
+  colorMode: ColorSpace,
   files: FileList,
   kMeansValue: number,
   patternHeight: number,
@@ -199,7 +199,7 @@ export async function generatePatternFromUploadedImage({
 }) {
   const colors = await getColorsFromUploadedImage({
     files,
-    sourceColor: ColorMode.RGB,
+    sourceColor: ColorSpace.RGB,
     destinationColor: colorMode,
   })
 

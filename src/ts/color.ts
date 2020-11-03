@@ -1,5 +1,5 @@
 import { BRI_SCALE, HUE_SCALE, SAT_SCALE, UPLOAD_SCALE_WIDTH } from './constants'
-import { RgbaColor, Color, ColorUploadSettings, ColorMode, isColor, ColorList, Cluster, DistanceCalculation } from './types'
+import { RgbaColor, Color, ColorUploadSettings, ColorSpace, isColor, ColorList, Cluster, DistanceCalculation, ColorDataList } from './types'
 import { findNearestCentroid } from './clustering'
 import { trimNumber } from './helpers'
 
@@ -322,7 +322,11 @@ const extractPixelData = (image: HTMLImageElement) => {
   const pixelData: Uint8ClampedArray = ctx.getImageData(0, 0, canvas.width, canvas.height).data
   // Iterate through the pixel data to create color array
   const rgbaColorData: RgbaColor[] = []
+  const colorData: ColorDataList = []
   for (let i = 0; i < pixelData.length; i += 4) {
+    // Each color has r, g, b, and a values, but only the r, g, b values are used
+    const rgbColor = [pixelData[i], pixelData[i + 1], pixelData[i + 2]]
+    const labColor = rgbToLab()
     rgbaColorData.push([
       pixelData[i], pixelData[i + 1], pixelData[i + 2], pixelData[i + 3]
     ])
@@ -350,14 +354,14 @@ export const getColorsFromUploadedImage = async (
      * { rgb: value, lab: value, hsl: value }
      */
 
-    // TODO: Add support for other color modes
-    if (sourceColor === ColorMode.RGB) {
+    // TODO: Add support for other color spaces
+    if (sourceColor === ColorSpace.RGB) {
       colorData = extractPixelData(image)
     } else {
       throw new Error(`Source image must be in RGB color mode, not ${sourceColor}.`)
     }
 
-    if (destinationColor === ColorMode.HSB) {
+    if (destinationColor === ColorSpace.HSB) {
       return colorData.map(rgbToHsb)
     } else {
       // Remove the alpha value from color palette

@@ -34,6 +34,16 @@ export type ColorList = Color[]
 
 export type Cluster = ColorList[]
 
+export interface ColorData {
+  [ColorSpace.RGB]?: Color,
+  [ColorSpace.HSB]?: Color,
+  [ColorSpace.LAB]?: Color,
+}
+
+export type ColorDataList = ColorData[]
+
+export type ColorDataCluster = ColorDataList[]
+
 export type DistanceCalculation = (colorA: Color, colorB: Color) => number
 
 export interface NearestCentroid {
@@ -45,13 +55,14 @@ export interface ValueRange {
   max: number;
 }
 
-export enum ColorMode {
+export enum ColorSpace {
   RGB = 'rgb',
   HSB = 'hsb',
+  LAB = 'lab',
 }
 
 export interface ColorUploadSettings {
   files: FileList,
-  sourceColor: ColorMode,
-  destinationColor: ColorMode,
+  sourceColor: ColorSpace,
+  destinationColor: ColorSpace,
 }

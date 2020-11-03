@@ -1,7 +1,8 @@
 import * as p5 from "p5";
+import { hsbToLab } from "./color";
 import { DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, config, HUE_START, SAT_START, BRI_START } from "./constants";
 import { perlinHue, perlinBri, perlinSat, addRandomToOffset } from "./helpers";
-import { ColorList } from "./types";
+import { ColorDataList, Color, ColorSpace } from "./types";
 
 const EMPTY_SKETCH = (p: p5) => {
   p.setup = () => {}
@@ -17,8 +18,8 @@ export const generateNoisePattern = (
   height: number = DEFAULT_CANVAS_HEIGHT,
   randomSeed: number = config.nSeed,
   noiseSeed: number = config.nSeed,
-): ColorList => {
-  const colors: ColorList = []
+): ColorDataList => {
+  const colors: ColorDataList = []
 
   // Set up random values
   p.randomSeed(randomSeed)
@@ -58,7 +59,10 @@ export const generateNoisePattern = (
       xSatOff += config.increment
       xBriOff += config.increment
 
-      colors.push([hue, sat, bri])
+      const hsbColor: Color = [hue, sat, bri]
+      const labColor = hsbToLab(hsbColor)
+
+      colors.push({ [ColorSpace.HSB]: hsbColor, [ColorSpace.LAB]: labColor })
     }
 
     // Increment the y offset value
