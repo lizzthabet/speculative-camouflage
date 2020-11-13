@@ -2,10 +2,13 @@
 node_modules/
 package-lock.json
 dist/
+nginx-local.conf
 
-# WIP files
-*.pdf
-*.md
+# Infra stuff
+.vagrant/
+onion/
+bin/onion.sh
+ubuntu-*
 
 # General stuff
 .DS_Store
