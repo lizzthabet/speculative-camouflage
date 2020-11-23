@@ -35,7 +35,6 @@ function createSaveButton(canvasWrapper: HTMLElement, p5Instance: p5, filename: 
   const button = document.createElement('button')
   button.innerHTML = `Save <span class="sr-only">${canvasWrapper.id}</span> pattern`
 
-  console.log(p5Instance)
   button.addEventListener('click', () => p5Instance.saveCanvas(filename, 'png'))
   button.addEventListener('keypress', (event: KeyboardEvent) => {
     console.log('button keypress', event)

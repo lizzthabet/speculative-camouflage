@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "gulp develop && gulp watch",
     "build": "gulp build",
+    "serve": "yarn run build && vagrant up",
     "webpack-build": "webpack --config webpack.prod.js",
     "webpack-dev": "webpack-dev-server --config webpack.dev.js"
   },
