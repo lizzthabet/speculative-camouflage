@@ -1,7 +1,7 @@
 import * as _ from "lodash";
-import { Color, Cluster, ColorList, NearestCentroid, DistanceCalculation } from "./types";
-import { randomInt } from "./helpers";
-import { ITERATION_LIMIT } from "./constants";
+import { Color, Cluster, ColorList, NearestCentroid, DistanceCalculation } from "../types";
+import { randomInt } from "../helpers";
+import { ITERATION_LIMIT } from "../constants";
 
 // Clustering techniques adapted from Xander Lewis
 // https://towardsdatascience.com/extracting-colours-from-an-image-using-k-means-clustering-9616348712be

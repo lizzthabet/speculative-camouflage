@@ -24,7 +24,7 @@
       <input type="file" id="file-upload" multiple="false" accept="image/*" required />
 
       <label for="k-means">Number of colors to extract from source</label>
-      <input type="number" id="k-means" min="2" max="32" step="1" value="12" required />
+      <input type="number" id="k-means" min="2" max="32" step="1" value="8" required />
 
       <label for="color-mode">Image color mode</label>
       <select id="color-mode" required>
@@ -37,6 +37,12 @@
 
       <label for="pattern-height">Pattern height (inches)</label>
       <input type="number" id="pattern-height" min="1" max="32" step="0.25" value="10" required />
+
+      <label for="pattern-type">Choose a pattern</label>
+      <select id="pattern-type" required>
+        <option value="voronoi">Voronoi</option>
+        <option value="noise">Noise</option>
+      </select>
 
       <button id="upload-image-submit" type="submit">Create pattern*</button>
       <p>*Note: this may take a couple minutes! Debugging logs are available in the console.</p>

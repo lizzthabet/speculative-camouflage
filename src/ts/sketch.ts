@@ -2,7 +2,7 @@ import * as p5 from "p5";
 import * as _ from "lodash";
 import { ColorList, Color, ColorMode } from "./types";
 import { config, PALETTE_SCALE } from "./constants";
-import { euclideanDistance, findNearestCentroid } from "./clustering";
+import { euclideanDistance, findNearestCentroid } from "./colors/clustering";
 import { scaleCanvasHeightToColors } from "./helpers";
 
 // This factory interates through a color list and returns the
@@ -50,7 +50,7 @@ export const drawColorsOnCanvasFactory = ({
   colorMode,
   colorPaletteProducer,
   colorProducer,
-}: {
+} : {
   canvasWidth: number,
   colorListLength: number,
   colorMode: ColorMode,
@@ -136,4 +136,37 @@ export function produceSketchFromColors({
   })
 
   return sketch
+}
+
+export const createCanvasWrapper = (id: string, appendToDom: boolean, title?: string) => {
+  const wrapper = document.createElement('figure')
+  wrapper.id = id
+
+  if (title) {
+    const wrapperTitle = document.createElement('h3')
+    wrapperTitle.innerHTML = title
+    wrapper.appendChild(wrapperTitle)
+  }
+
+  if (appendToDom) {
+    document.body.appendChild(wrapper)
+  }
+
+  return wrapper
+}
+
+export function createSaveButtonForSketch(canvasWrapper: HTMLElement, p5Instance: p5, filename: string) {
+  const button = document.createElement('button')
+  button.innerHTML = `Save <span class="sr-only">${canvasWrapper.id}</span> pattern`
+
+  button.addEventListener('click', () => p5Instance.saveCanvas(filename, 'png'))
+  button.addEventListener('keypress', (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      p5Instance.saveCanvas(filename, 'png')
+    }
+  })
+
+  canvasWrapper.appendChild(button)
+
+  return button
 }

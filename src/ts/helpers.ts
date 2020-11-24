@@ -4,7 +4,7 @@ import { DEFAULT_RESOLUTION, FLOAT_SETTINGS } from './constants';
 
 export const parseIntOrFloat = (setting: Setting, value: string) => FLOAT_SETTINGS.includes(setting) ? parseFloat(value) : parseInt(value, 10)
 
-export const randomInt = (x: number, y: number) => Math.floor(Math.random() * (y - x + 1) + x)
+export const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min)
 
 export const randomP = (p: p5, threshhold: number) => p.random(-threshhold, threshhold)
 

@@ -1,11 +1,15 @@
 {
   "compilerOptions": {
+    "baseUrl": "./src",
     "outDir": "./dist/",
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "esNext",
     "target": "esNext",
     "allowJs": false,
-    "removeComments": true
+    "removeComments": true,
+    "paths": {
+      "voronoi/*": ["../node_modules/voronoi/*"]
+    }
   }
 }

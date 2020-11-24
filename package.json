@@ -14,7 +14,8 @@
   "license": "MIT",
   "dependencies": {
     "lodash": "^4.17.19",
-    "p5": "^0.8.0"
+    "p5": "^0.8.0",
+    "voronoi": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
