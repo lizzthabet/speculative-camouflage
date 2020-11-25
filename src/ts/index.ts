@@ -1,9 +1,9 @@
-import { ColorMode } from "./types";
+import { ColorList, ColorMode } from "./types";
 import { inchesToPixels } from "./helpers";
 import { DEFAULT_RESOLUTION } from "./constants";
 import { getColorsFromUploadedImage, viewColorPalette } from './colors/palette'
 import { drawNoisePatternWithImageColors } from "./patterns/noise-pattern";
-import { drawVoronoiPatternWithImageColors } from "./patterns/voronoi-pattern";
+import { clearCanvas, drawVoronoiPatternWithImageColors } from "./patterns/voronoi-pattern";
 
 window.addEventListener('load', () => {
   // Grab the UI elements that will be interacted with
@@ -45,6 +45,153 @@ window.addEventListener('load', () => {
     })
   }
 })
+
+interface VoronoiState {
+  iteration: number,
+  imageCentroids: ColorList,
+  kMeans: number | null,
+  patternHeight: number,
+  patternWidth: number,
+  rawImageData: ColorList,
+  numSites: number | null,
+}
+
+// Voronoi testing state
+const voronoiState: VoronoiState = {
+  iteration: 0,
+  imageCentroids: [],
+  kMeans: null,
+  rawImageData: [],
+  patternHeight: 0,
+  patternWidth: 0,
+  numSites: null,
+}
+
+function createVoronoiEditForm(state: VoronoiState, voronoiCanvas: HTMLCanvasElement) {
+  const wrapper = document.createElement('figure')
+
+  const heading = document.createElement('h4')
+  heading.innerText = 'Adjust pattern settings'
+
+  const form: HTMLFormElement = document.createElement('form')
+  form.id = `voronoi-edit-${state.iteration}`
+
+  const cellsLabel = document.createElement('label')
+  cellsLabel.innerText = 'Number of cells'
+  const cellsInput: HTMLInputElement = document.createElement('input')
+  cellsInput.id = 'cells'
+  cellsInput.type = 'number'
+  cellsInput.min = '2'
+  cellsInput.max = '50'
+  cellsInput.value = String(voronoiState.numSites) || ''
+
+  const kMeansLabel = document.createElement('label')
+  kMeansLabel.innerText = 'Number of extracted colors'
+  const kMeansInput: HTMLInputElement = document.createElement('input')
+  kMeansInput.id = 'kmeans'
+  kMeansInput.type = 'number'
+  kMeansInput.min = '1'
+  kMeansInput.max = '32'
+  kMeansInput.value = String(voronoiState.kMeans) || ''
+
+  const submitButton: HTMLButtonElement = document.createElement('button')
+  submitButton.innerText = 'Regenerate voronoi pattern'
+  submitButton.type = 'submit'
+
+  form.appendChild(cellsLabel)
+  form.appendChild(cellsInput)
+  form.appendChild(kMeansLabel)
+  form.appendChild(kMeansInput)
+  form.appendChild(submitButton)
+
+  form.addEventListener('submit', (e: Event) => {
+    e.preventDefault()
+
+    const cellsValue = parseInt(cellsInput.value)
+    const kMeansValue = parseInt(kMeansInput.value)
+    // Regenerate the color palette if number of colors is different
+    if (kMeansValue !== voronoiState.kMeans) {
+      const {
+        sortedCentroids: sortedImageCentroids,
+      } = viewColorPalette(voronoiState.rawImageData, kMeansValue, ColorMode.RGB)
+
+      // Update the voronoi state with new palette
+      voronoiState.imageCentroids = sortedImageCentroids
+      voronoiState.kMeans = kMeansValue
+    }
+
+    // Update the voronoi state with cells value
+    voronoiState.iteration++
+    voronoiState.numSites = cellsValue
+
+    clearCanvas(voronoiCanvas)
+
+    drawVoronoiPatternWithImageColors({
+      imageCentroids: voronoiState.imageCentroids,
+      imageClusters: [],
+      numSites: voronoiState.numSites,
+      suppliedCanvas: voronoiCanvas,
+      patternHeight: voronoiState.patternHeight,
+      patternWidth: voronoiState.patternWidth,
+      useLastGradients: false, // easy for now
+      useLastSites: false, // easy for now
+    })
+  })
+
+  // Create a button to randomize the colors and color pairing
+  const randomizeGradientsButton: HTMLButtonElement = document.createElement('button')
+  randomizeGradientsButton.innerText = 'Randomize gradient pairings'
+
+  randomizeGradientsButton.addEventListener('click', (e: Event) => {
+    e.preventDefault()
+
+    // Update the voronoi state!
+    voronoiState.iteration++
+
+    clearCanvas(voronoiCanvas)
+
+    drawVoronoiPatternWithImageColors({
+      imageCentroids: voronoiState.imageCentroids,
+      imageClusters: [],
+      patternHeight: voronoiState.patternHeight,
+      patternWidth: voronoiState.patternWidth,
+      numSites: voronoiState.numSites,
+      suppliedCanvas: voronoiCanvas,
+      useLastSites: true,
+      useLastGradients: false,
+    })
+  })
+
+  // Create a button to randomize the site generation
+  const randomizeSitesButton: HTMLButtonElement = document.createElement('button')
+  randomizeSitesButton.innerText = 'Randomize site locations'
+  randomizeSitesButton.addEventListener('click', (e: Event) => {
+    e.preventDefault()
+
+    // Update the voronoi state!
+    voronoiState.iteration++
+
+    clearCanvas(voronoiCanvas)
+
+    drawVoronoiPatternWithImageColors({
+      imageCentroids: voronoiState.imageCentroids,
+      imageClusters: [],
+      patternHeight: voronoiState.patternHeight,
+      patternWidth: voronoiState.patternWidth,
+      numSites: voronoiState.numSites,
+      suppliedCanvas: voronoiCanvas,
+      useLastSites: false,
+      useLastGradients: true,
+    })
+  })
+
+  wrapper.appendChild(heading)
+  wrapper.appendChild(randomizeGradientsButton)
+  wrapper.appendChild(randomizeSitesButton)
+  wrapper.appendChild(form)
+
+  return wrapper
+}
 
 async function generatePatternFromUploadedImage({
   colorMode,
@@ -95,16 +242,28 @@ async function generatePatternFromUploadedImage({
       patternWidth,
     })
   } else if (patternType.toLowerCase() === 'voronoi') {
-    drawVoronoiPatternWithImageColors({
+    // Set the voronoi state
+    voronoiState.imageCentroids = sortedImageCentroids
+    voronoiState.kMeans = kMeansValue
+    voronoiState.patternWidth = patternWidth
+    voronoiState.patternHeight = patternHeight
+    voronoiState.rawImageData = colors
+    voronoiState.numSites = 25
+
+    const canvas = drawVoronoiPatternWithImageColors({
       imageCentroids: sortedImageCentroids,
       imageClusters: sortedImageClusters,
       patternHeight,
       patternWidth,
+      numSites: 25, // Hardcoding the number of sites for now
     })
+
+    const editForm = createVoronoiEditForm(voronoiState, canvas)
+    document.body.appendChild(editForm)
+
   } else {
     throw new Error(`Pattern type with name ${patternType} is not supported. Supply a different pattern type.`)
   }
-
 
   /**
    * Next steps:

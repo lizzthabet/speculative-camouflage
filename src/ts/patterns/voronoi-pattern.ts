@@ -14,49 +14,91 @@ import { randomInt } from "../helpers"
 import { createCanvasWrapper } from "../sketch";
 import { Color, ColorList, Cluster } from "../types"
 
-// TODO: Add complexity / cell number as input
+let lastSites: VoronoiSites
+let lastGradients: [Color, Color][] = []
+
 export function drawVoronoiPatternWithImageColors({
   imageCentroids,
+  numSites,
   patternHeight,
   patternWidth,
+  suppliedCanvas,
+  useLastGradients,
+  useLastSites,
 }: {
   imageCentroids: ColorList,
   imageClusters: Cluster,
+  numSites: number,
   patternHeight: number,
   patternWidth: number,
+  suppliedCanvas?: HTMLCanvasElement,
+  useLastGradients?: boolean,
+  useLastSites?: boolean,
 }) {
-  const canvas: HTMLCanvasElement = document.createElement('canvas')
-  canvas.height = patternHeight
-  canvas.width = patternWidth
+  const canvas: HTMLCanvasElement = suppliedCanvas ? suppliedCanvas : document.createElement('canvas')
   const ctx = canvas.getContext('2d')
 
-  const canvasWrapper = createCanvasWrapper('voronoi-pattern', true, 'Voronoi pattern using image source colors')
-  canvasWrapper.appendChild(canvas)
+  // If we're not drawing on an existing canvas:
+  if (!suppliedCanvas) {
+    // Set the canvas height and width
+    canvas.height = patternHeight
+    canvas.width = patternWidth
 
-  const boundingBox: VoronoiBoundingBox = { xl: 0, xr: patternWidth, yt: 0, yb: patternHeight }
-  const randomSites: VoronoiSites = []
-
-  // Hardcoding the number of sites / cells for now
-  for (let i = 0; i < 25; i++) {
-    randomSites.push({
-      x: randomInt(0, patternWidth),
-      y: randomInt(0, patternHeight),
-    })
+    // Add the canvas to a wrapper element and append to DOM
+    const canvasWrapper = createCanvasWrapper('voronoi-pattern', true, 'Voronoi pattern using image source colors')
+    canvasWrapper.appendChild(canvas)
   }
 
-  const diagram = new Voronoi().compute(randomSites, boundingBox)
+  const boundingBox: VoronoiBoundingBox = { xl: 0, xr: patternWidth, yt: 0, yb: patternHeight }
+  const sites: VoronoiSites = useLastSites ? lastSites : []
 
+  // Create random sites if we're not reusing the previously generated sites
+  if (!useLastSites) {
+    for (let i = 0; i < numSites; i++) {
+      sites.push({
+        x: randomInt(0, patternWidth),
+        y: randomInt(0, patternHeight),
+      })
+    }
+  }
+
+  // Save the random sites for future pattern iterations
+  lastSites = sites
+
+  // Compute the voronoi diagram
+  const diagram = new Voronoi().compute(sites, boundingBox)
+
+  console.log(`Finished generating voronoi diagram with ${sites.length} sites`)
+
+  // Simplify the voronoi cell and vertex data so it's easier to iterate through
   const simplifiedCells = diagram.cells.map(cell => {
     return cell.halfedges.map(edge => edge.getEndpoint())
   })
 
-  // Loop through the simplified cell data to draw each cell with a random gradient
-  simplifiedCells.forEach(cell => {
-    ctx.fillStyle = createRandomGradientForCell(cell, ctx, imageCentroids)
+  // Loop through the simplified cell data to draw each cell with a gradient
+  simplifiedCells.forEach((cell, idx) => {
+    let gradient: CanvasGradient
+    if (useLastGradients) {
+      // Use the previous gradient color pairing
+      const [ colorA, colorB ] = lastGradients[idx]
+      // Regenerate the canvas gradient based on new cell size
+      gradient = createGradientForCell(cell, ctx, colorA, colorB)
+    } else {
+      // Generate a random gradient from the supplied color palette
+      const randomGradientData = createRandomGradientForCell(cell, ctx, imageCentroids)
+      gradient = randomGradientData.gradient
+      // Save the gradient color pairings for future use
+      lastGradients[idx] = [ randomGradientData.colorA, randomGradientData.colorB ]
+    }
+
+    // Set the gradient as the style for this cell
+    ctx.fillStyle = gradient
     ctx.beginPath()
+    // Loop through the cell's vertices to draw each one
     cell.forEach((vertex, i) => {
       if (i === 0) {
-        // The `moveTo` method just moves the pen coordinates; it doesn't actually draw anything and it should be called first
+        // Note: `moveTo` just moves the pen coordinates to starting position;
+        // it doesn't draw anything and needs to be called first
         ctx.moveTo(vertex.x, vertex.y)
       } else {
         ctx.lineTo(vertex.x, vertex.y)
@@ -65,33 +107,43 @@ export function drawVoronoiPatternWithImageColors({
     ctx.closePath()
     ctx.fill()
   })
+
+  return canvas
 }
 
-export function createRandomGradientForCell(cell: VoronoiVertex[], ctx: CanvasRenderingContext2D, colors?: ColorList) {
+export function clearCanvas(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  console.log('Clearing canvas context')
+
+  return canvas
+}
+
+function createRandomGradientForCell(cell: VoronoiVertex[], ctx: CanvasRenderingContext2D, colors?: ColorList) {
+  // Choose a first random color
+  const randomIdxA = randomInt(0, colors.length - 1)
+
+  // Make sure that the second random color is not the same as the first one
+  let randomIdxB = randomInt(0, colors.length - 1)
+  while (randomIdxA === randomIdxB) {
+    randomIdxB = randomInt(0, colors.length - 1)
+  }
+
+  const colorA = colors[randomIdxA]
+  const colorB = colors[randomIdxB]
+
+  const gradient = createGradientForCell(cell, ctx, colorA, colorB)
+
+  return { gradient, colorA, colorB }
+}
+
+function createGradientForCell(cell: VoronoiVertex[], ctx: CanvasRenderingContext2D, colorA: Color, colorB: Color) {
   const { top, bottom } = findGradientPoints(cell)
   const gradient = ctx.createLinearGradient(top.x, top.y, bottom.x, bottom.y)
 
-  let colorA: Color;
-  let colorB: Color;
-  if (colors && colors.length) {
-    let randomIdxA = randomInt(0, colors.length - 1)
-    let randomIdxB = randomInt(0, colors.length - 1)
-    while (randomIdxA === randomIdxB) {
-      randomIdxB = randomInt(0, colors.length - 1)
-    }
-
-    colorA = colors[randomIdxA]
-    colorB = colors[randomIdxB]
-  } else {
-    colorA = [randomInt(0, 255), randomInt(0, 255), randomInt(0, 255)]
-    colorB = [randomInt(0, 255), randomInt(0, 255), randomInt(0, 255)]
-  }
-
-  const [rA, gA, bA] = colorA
-  const [rB, gB, bB] = colorB
-
-  gradient.addColorStop(0, `rgb(${rA}, ${gA}, ${bA})`)
-  gradient.addColorStop(1, `rgb(${rB}, ${gB}, ${bB})`)
+  gradient.addColorStop(0, `rgb(${colorA[0]}, ${colorA[1]}, ${colorA[2]})`)
+  gradient.addColorStop(1, `rgb(${colorB[0]}, ${colorB[1]}, ${colorB[2]})`)
 
   return gradient
 }
@@ -119,8 +171,4 @@ function findGradientPoints(listOfPoints: VoronoiVertex[]) {
     top: { x: leftMostX, y: topMostY },
     bottom: { x: leftMostX, y: bottomMostY }
   }
-}
-
-function randomRgbStringColor() {
-  return `rgb(${randomInt(0, 255)}, ${randomInt(0, 255)}, ${randomInt(0, 255)})`
 }
