@@ -66,10 +66,14 @@ export interface ColorPaletteInput {
 
 export interface ColorPaletteOutput {
   colorPalette: ColorList,
-  sortedClusters: Cluster,
-  sortedColors: ColorList,
+  colorClusters: Cluster,
 }
 
 export interface ColorPaletteViewOutput extends ColorPaletteOutput {
   p5Instance: p5,
+}
+
+export interface ColorPaletteState {
+  colorPalette: ColorList;
+  colorClusters: Cluster;
 }

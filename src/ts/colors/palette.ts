@@ -198,7 +198,7 @@ export const labToHsb = (lab: Color) => {
  * (which have knowledge of the clustering types and structure)
  */
 
-export function sortByFrequency (cl: Cluster, ct: ColorList): {
+export function sortByFrequency (cl: Cluster, ct?: ColorList): {
   sortedClusters: Cluster, sortedCentroids: ColorList
 } {
   const sortedClusters: Cluster = []
@@ -208,7 +208,9 @@ export function sortByFrequency (cl: Cluster, ct: ColorList): {
   freqList.sort((a, b) => b[0] - a[0])
   freqList.forEach(([_length, idx]) => {
     sortedClusters.push(cl[idx])
-    sortedCentroids.push(ct[idx])
+    if (ct && ct.length) {
+      sortedCentroids.push(ct[idx])
+    }
   })
 
   return { sortedClusters, sortedCentroids }
@@ -220,11 +222,11 @@ export function flattenColors({
   sortColors
 }: {
   clusters: Cluster,
-  centroids: ColorList,
+  centroids?: ColorList,
   sortColors: boolean
 }): {
   colors: ColorList,
-  centroids: ColorList,
+  sortedCentroids?: ColorList,
   sortedClusters?: Cluster,
 } {
   const colors: ColorList = []
@@ -232,11 +234,11 @@ export function flattenColors({
     const { sortedClusters, sortedCentroids } = sortByFrequency(clusters, centroids)
     sortedClusters.forEach(cluster => cluster.forEach(c => colors.push(c)))
 
-    return { colors, centroids: sortedCentroids, sortedClusters }
+    return { colors, sortedCentroids, sortedClusters }
   } else {
     clusters.forEach(cluster => cluster.forEach(c => colors.push(c)))
 
-    return { colors, centroids }
+    return { colors }
   }
 }
 
@@ -397,16 +399,14 @@ export function createColorPalette({ colors, colorPaletteSize, colorMode }: Colo
   console.log(`Clustering ${colors.length} colors complete into ${colorPaletteSize} groups`)
 
   const {
-    colors: sortedLabColors,
-    centroids: sortedLabCentroids,
+    sortedCentroids: sortedLabCentroids,
     sortedClusters: sortedLabClusters
   } = flattenColors({ clusters: labClusters, centroids: labCentroids, sortColors: true })
 
   // Convert LAB colors back to original color mode
-  const sortedColors = sortedLabColors.map(c => labToColor(c))
   const sortedCentroids = sortedLabCentroids.map(c => labToColor(c))
   const sortedClusters = sortedLabClusters.map(cluster => cluster.map(c => labToColor(c)))
 
   // All outputted color arrays are sorted by frequency
-  return { colorPalette: sortedCentroids, sortedClusters, sortedColors }
+  return { colorPalette: sortedCentroids, colorClusters: sortedClusters }
 }

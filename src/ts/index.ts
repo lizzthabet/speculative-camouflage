@@ -1,8 +1,8 @@
 import { ColorList, ColorMode, ColorPaletteOutput } from "./types";
 import { inchesToPixels } from "./helpers";
 import { DEFAULT_RESOLUTION } from "./constants";
-import { getColorsFromUploadedImage } from './colors/palette';
-import { viewColorPalette } from './colors/sketch-palette';
+import { getColorsFromUploadedImage, createColorPalette } from './colors/palette';
+import { viewColorPalette } from './colors/visualize';
 import { drawNoisePatternWithImageColors } from "./patterns/noise-pattern";
 import { clearCanvas, drawVoronoiPatternWithImageColors } from "./patterns/voronoi-pattern";
 import Worker from 'worker-loader!./workers/clustering.worker';
@@ -113,16 +113,16 @@ function createVoronoiEditForm(state: VoronoiState, voronoiCanvas: HTMLCanvasEle
     const kMeansValue = parseInt(kMeansInput.value)
     // Regenerate the color palette if number of colors is different
     if (kMeansValue !== voronoiState.kMeans) {
-      const {
-        colorPalette: sortedImageCentroids,
-      } = viewColorPalette({
+      const palette = createColorPalette({
         colors: voronoiState.rawImageData,
         colorPaletteSize: kMeansValue,
         colorMode: ColorMode.RGB
       })
 
+      viewColorPalette(palette)
+
       // Update the voronoi state with new palette
-      voronoiState.imageCentroids = sortedImageCentroids
+      voronoiState.imageCentroids = palette.colorPalette
       voronoiState.kMeans = kMeansValue
     }
 
@@ -242,10 +242,14 @@ async function generatePatternFromUploadedImage({
     worker.postMessage({colors, colorPaletteSize: kMeansValue, colorMode})
   }
 
-  const {
-    colorPalette: sortedImageCentroids,
-    sortedClusters: sortedImageClusters
-  } = viewColorPalette({colors, colorPaletteSize: kMeansValue, colorMode})
+  const palette = createColorPalette({
+    colors,
+    colorPaletteSize: kMeansValue,
+    colorMode,
+  })
+
+  viewColorPalette(palette)
+  
   console.log('**** Finished color palette in main thread ****')
 
   /**
@@ -257,8 +261,8 @@ async function generatePatternFromUploadedImage({
   if (patternType.toLowerCase() === 'noise') {
     // Draw the pattern with colors from the original image's palette
     drawNoisePatternWithImageColors({
-      imageCentroids: sortedImageCentroids,
-      imageClusters: sortedImageClusters,
+      imageCentroids: palette.colorPalette,
+      imageClusters: palette.colorClusters,
       kMeansValue,
       mapBothOriginalAndPaletteColors: false,
       patternHeight,
@@ -266,7 +270,7 @@ async function generatePatternFromUploadedImage({
     })
   } else if (patternType.toLowerCase() === 'voronoi') {
     // Set the voronoi state
-    voronoiState.imageCentroids = sortedImageCentroids
+    voronoiState.imageCentroids = palette.colorPalette
     voronoiState.kMeans = kMeansValue
     voronoiState.patternWidth = patternWidth
     voronoiState.patternHeight = patternHeight
@@ -274,8 +278,8 @@ async function generatePatternFromUploadedImage({
     voronoiState.numSites = 25
 
     const canvas = drawVoronoiPatternWithImageColors({
-      imageCentroids: sortedImageCentroids,
-      imageClusters: sortedImageClusters,
+      imageCentroids: palette.colorPalette,
+      imageClusters: palette.colorClusters,
       patternHeight,
       patternWidth,
       numSites: 25, // Hardcoding the number of sites for now
