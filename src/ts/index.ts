@@ -1,9 +1,11 @@
-import { ColorList, ColorMode } from "./types";
+import { ColorList, ColorMode, ColorPaletteOutput } from "./types";
 import { inchesToPixels } from "./helpers";
 import { DEFAULT_RESOLUTION } from "./constants";
-import { getColorsFromUploadedImage, viewColorPalette } from './colors/palette'
+import { getColorsFromUploadedImage } from './colors/palette';
+import { viewColorPalette } from './colors/sketch-palette';
 import { drawNoisePatternWithImageColors } from "./patterns/noise-pattern";
 import { clearCanvas, drawVoronoiPatternWithImageColors } from "./patterns/voronoi-pattern";
+import Worker from 'worker-loader!./workers/clustering.worker';
 
 window.addEventListener('load', () => {
   // Grab the UI elements that will be interacted with
@@ -112,8 +114,12 @@ function createVoronoiEditForm(state: VoronoiState, voronoiCanvas: HTMLCanvasEle
     // Regenerate the color palette if number of colors is different
     if (kMeansValue !== voronoiState.kMeans) {
       const {
-        sortedCentroids: sortedImageCentroids,
-      } = viewColorPalette(voronoiState.rawImageData, kMeansValue, ColorMode.RGB)
+        colorPalette: sortedImageCentroids,
+      } = viewColorPalette({
+        colors: voronoiState.rawImageData,
+        colorPaletteSize: kMeansValue,
+        colorMode: ColorMode.RGB
+      })
 
       // Update the voronoi state with new palette
       voronoiState.imageCentroids = sortedImageCentroids
@@ -220,10 +226,27 @@ async function generatePatternFromUploadedImage({
    * Color palette extraction
    */
 
+  // A temporary demo of processing color palette via web worker
+  if (window.Worker) {
+    const worker = new Worker()
+
+    worker.onmessage = (event: MessageEvent<ColorPaletteOutput>) => {
+      console.log('**** Color palette complete from web worker ****')
+      worker.terminate()
+    }
+
+    worker.onerror = (error: any) => {
+      console.error('Web worker errored out on color palette generation', error)
+    }
+
+    worker.postMessage({colors, colorPaletteSize: kMeansValue, colorMode})
+  }
+
   const {
-    sortedCentroids: sortedImageCentroids,
+    colorPalette: sortedImageCentroids,
     sortedClusters: sortedImageClusters
-  } = viewColorPalette(colors, kMeansValue, colorMode)
+  } = viewColorPalette({colors, colorPaletteSize: kMeansValue, colorMode})
+  console.log('**** Finished color palette in main thread ****')
 
   /**
    * Color palette swapping!

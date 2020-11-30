@@ -1,9 +1,18 @@
-import * as p5 from "p5";
-import { BRI_SCALE, HUE_SCALE, SAT_SCALE, UPLOAD_SCALE_WIDTH, DEFAULT_CANVAS_WIDTH } from '../constants'
-import { RgbaColor, Color, ColorUploadSettings, ColorMode, isColor, ColorList, Cluster, DistanceCalculation } from '../types'
+import { BRI_SCALE, HUE_SCALE, SAT_SCALE, UPLOAD_SCALE_WIDTH } from '../constants'
+import {
+  RgbaColor,
+  Color,
+  ColorUploadSettings,
+  ColorMode,
+  isColor,
+  ColorList,
+  Cluster,
+  DistanceCalculation,
+  ColorPaletteInput,
+  ColorPaletteOutput,
+} from '../types'
 import { findNearestCentroid, kMeans, deltaE00Distance } from './clustering'
 import { trimNumber } from '../helpers'
-import { produceSketchFromColors, createSaveButtonForSketch, createCanvasWrapper } from "../sketch";
 
 const CIE10D65_DAYLIGHT = [94.811, 100, 107.304]
 
@@ -374,18 +383,18 @@ export const getColorsFromUploadedImage = async (
 }
 
 /**
- * Cluster and draw colors with color palette swatches from a color list
+ * Cluster colors to produce color palette from a color list
  */
-export function viewColorPalette(originalColors: ColorList, kMeansValue: number, colorMode: ColorMode) {
-  // Determine which color converters to use
+export function createColorPalette({ colors, colorPaletteSize, colorMode }: ColorPaletteInput): ColorPaletteOutput {
+  // Select the corresponding color conversion functions
   const colorToLab = colorMode === ColorMode.RGB ? rgbToLab : hsbToLab
   const labToColor = colorMode === ColorMode.RGB ? labToRgb : labToHsb
 
   // Convert colors to LAB space for creating a color palette
-  const labColors = originalColors.map(c => colorToLab(c))
-  const { clusters: labClusters, centroids: labCentroids } = kMeans(labColors, kMeansValue, deltaE00Distance)
+  const labColors = colors.map(c => colorToLab(c))
+  const { clusters: labClusters, centroids: labCentroids } = kMeans(labColors, colorPaletteSize, deltaE00Distance)
 
-  console.log('Clustering complete - perceptual')
+  console.log(`Clustering ${colors.length} colors complete into ${colorPaletteSize} groups`)
 
   const {
     colors: sortedLabColors,
@@ -398,22 +407,6 @@ export function viewColorPalette(originalColors: ColorList, kMeansValue: number,
   const sortedCentroids = sortedLabCentroids.map(c => labToColor(c))
   const sortedClusters = sortedLabClusters.map(cluster => cluster.map(c => labToColor(c)))
 
-  const labSketchSortedColors = produceSketchFromColors({
-    colors: sortedColors,
-    colorPalette: sortedCentroids,
-    colorMode: ColorMode.RGB,
-    canvasWidth: DEFAULT_CANVAS_WIDTH
-  })
-
-  const wrapper = createCanvasWrapper(
-    'image-color-palette',
-    true,
-    `Uploaded image palette with ${kMeansValue} colors`
-  )
-
-  const p5Instance = new p5(labSketchSortedColors, wrapper)
-
-  createSaveButtonForSketch(wrapper, p5Instance, wrapper.id)
-
-  return { sortedClusters, sortedColors, sortedCentroids, p5Instance }
+  // All outputted color arrays are sorted by frequency
+  return { colorPalette: sortedCentroids, sortedClusters, sortedColors }
 }

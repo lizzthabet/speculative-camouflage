@@ -1,3 +1,5 @@
+import * as p5 from "p5"
+
 export interface Config {
   increment: number,
   scale: number,
@@ -54,4 +56,20 @@ export interface ColorUploadSettings {
   files: FileList,
   sourceColor: ColorMode,
   destinationColor: ColorMode,
+}
+
+export interface ColorPaletteInput {
+  colors: ColorList,
+  colorMode: ColorMode,
+  colorPaletteSize: number,
+}
+
+export interface ColorPaletteOutput {
+  colorPalette: ColorList,
+  sortedClusters: Cluster,
+  sortedColors: ColorList,
+}
+
+export interface ColorPaletteViewOutput extends ColorPaletteOutput {
+  p5Instance: p5,
 }

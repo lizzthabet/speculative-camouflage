@@ -1,9 +1,5 @@
 const path = require("path");
 
-// Uncomment below if you have a large project
-// const HappyPack = require("happypack");
-// const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
-
 module.exports = {
   entry: ["./src/ts/index.ts"],
   output: {
@@ -13,19 +9,21 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: "babel-loader", // use: 'happypack/loader', if you have a large project
+        test: /\.worker.\.ts$/,
+        use: [
+          { loader: "babel-loader" },
+          { loader: "worker-loader" },
+        ], 
+        exclude: ["/node_modules"],
+      },
+      {
+        test: /\.ts$/,
+        use: "babel-loader",
         exclude: ["/node_modules"],
       },
     ],
   },
-  plugins: [
-    // Uncomment below if you have a large project
-    // new HappyPack({
-    //   loaders: ['babel-loader']
-    // }),
-    // new HardSourceWebpackPlugin()
-  ],
+  plugins: [],
   resolve: {
     extensions: [".ts", ".js"],
   },
