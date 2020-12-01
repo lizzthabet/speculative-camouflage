@@ -5,7 +5,10 @@ import { getColorsFromUploadedImage, createColorPalette } from './colors/palette
 import { viewColorPalette } from './colors/visualize';
 import { drawNoisePatternWithImageColors } from "./patterns/noise-pattern";
 import { clearCanvas, drawVoronoiPatternWithImageColors } from "./patterns/voronoi-pattern";
+import { PatternState, SourceImage } from "./state";
 import Worker from 'worker-loader!./workers/clustering.worker';
+
+const state = new PatternState()
 
 window.addEventListener('load', () => {
   // Grab the UI elements that will be interacted with
@@ -50,33 +53,29 @@ window.addEventListener('load', () => {
 
 interface VoronoiState {
   iteration: number,
-  imageCentroids: ColorList,
   kMeans: number | null,
   patternHeight: number,
   patternWidth: number,
-  rawImageData: ColorList,
   numSites: number | null,
 }
 
 // Voronoi testing state
 const voronoiState: VoronoiState = {
   iteration: 0,
-  imageCentroids: [],
   kMeans: null,
-  rawImageData: [],
   patternHeight: 0,
   patternWidth: 0,
   numSites: null,
 }
 
-function createVoronoiEditForm(state: VoronoiState, voronoiCanvas: HTMLCanvasElement) {
+function createVoronoiEditForm(voronoiCanvas: HTMLCanvasElement) {
   const wrapper = document.createElement('figure')
 
   const heading = document.createElement('h4')
   heading.innerText = 'Adjust pattern settings'
 
   const form: HTMLFormElement = document.createElement('form')
-  form.id = `voronoi-edit-${state.iteration}`
+  form.id = `voronoi-edit`
 
   const cellsLabel = document.createElement('label')
   cellsLabel.innerText = 'Number of cells'
@@ -113,16 +112,10 @@ function createVoronoiEditForm(state: VoronoiState, voronoiCanvas: HTMLCanvasEle
     const kMeansValue = parseInt(kMeansInput.value)
     // Regenerate the color palette if number of colors is different
     if (kMeansValue !== voronoiState.kMeans) {
-      const palette = createColorPalette({
-        colors: voronoiState.rawImageData,
-        colorPaletteSize: kMeansValue,
-        colorMode: ColorMode.RGB
-      })
-
-      viewColorPalette(palette)
+      state.source.getColorPalette(kMeansValue)
+      state.source.viewColorPalette(kMeansValue)
 
       // Update the voronoi state with new palette
-      voronoiState.imageCentroids = palette.colorPalette
       voronoiState.kMeans = kMeansValue
     }
 
@@ -133,7 +126,7 @@ function createVoronoiEditForm(state: VoronoiState, voronoiCanvas: HTMLCanvasEle
     clearCanvas(voronoiCanvas)
 
     drawVoronoiPatternWithImageColors({
-      imageCentroids: voronoiState.imageCentroids,
+      imageCentroids: state.source.getColorPalette(voronoiState.kMeans).colorPalette,
       imageClusters: [],
       numSites: voronoiState.numSites,
       suppliedCanvas: voronoiCanvas,
@@ -157,7 +150,7 @@ function createVoronoiEditForm(state: VoronoiState, voronoiCanvas: HTMLCanvasEle
     clearCanvas(voronoiCanvas)
 
     drawVoronoiPatternWithImageColors({
-      imageCentroids: voronoiState.imageCentroids,
+      imageCentroids: state.source.getColorPalette(voronoiState.kMeans).colorPalette,
       imageClusters: [],
       patternHeight: voronoiState.patternHeight,
       patternWidth: voronoiState.patternWidth,
@@ -180,7 +173,7 @@ function createVoronoiEditForm(state: VoronoiState, voronoiCanvas: HTMLCanvasEle
     clearCanvas(voronoiCanvas)
 
     drawVoronoiPatternWithImageColors({
-      imageCentroids: voronoiState.imageCentroids,
+      imageCentroids: state.source.getColorPalette(voronoiState.kMeans).colorPalette,
       imageClusters: [],
       patternHeight: voronoiState.patternHeight,
       patternWidth: voronoiState.patternWidth,
@@ -214,11 +207,17 @@ async function generatePatternFromUploadedImage({
   patternType: string,
   patternWidth: number,
 }) {
+
   const colors = await getColorsFromUploadedImage({
     files,
     sourceColor: ColorMode.RGB,
     destinationColor: colorMode,
   })
+
+  // Add the source image to the state
+  // TODO: Handle multiple images being uploaded by clearing the DOM of previous content
+  const sourceImage = new SourceImage(colors, colorMode)
+  state.sourceImage = sourceImage
 
   console.log(`Uploaded image has ${colors.length} colors`)
 
@@ -242,14 +241,17 @@ async function generatePatternFromUploadedImage({
     worker.postMessage({colors, colorPaletteSize: kMeansValue, colorMode})
   }
 
-  const palette = createColorPalette({
-    colors,
-    colorPaletteSize: kMeansValue,
-    colorMode,
-  })
+  // const palette = createColorPalette({
+  //   colors,
+  //   colorPaletteSize: kMeansValue,
+  //   colorMode,
+  // })
 
-  viewColorPalette(palette)
-  
+  // viewColorPalette(palette)
+
+  const palette = sourceImage.getColorPalette(kMeansValue)
+  sourceImage.viewColorPalette(kMeansValue)
+
   console.log('**** Finished color palette in main thread ****')
 
   /**
@@ -270,11 +272,9 @@ async function generatePatternFromUploadedImage({
     })
   } else if (patternType.toLowerCase() === 'voronoi') {
     // Set the voronoi state
-    voronoiState.imageCentroids = palette.colorPalette
     voronoiState.kMeans = kMeansValue
     voronoiState.patternWidth = patternWidth
     voronoiState.patternHeight = patternHeight
-    voronoiState.rawImageData = colors
     voronoiState.numSites = 25
 
     const canvas = drawVoronoiPatternWithImageColors({
@@ -285,7 +285,7 @@ async function generatePatternFromUploadedImage({
       numSites: 25, // Hardcoding the number of sites for now
     })
 
-    const editForm = createVoronoiEditForm(voronoiState, canvas)
+    const editForm = createVoronoiEditForm(canvas)
     document.body.appendChild(editForm)
 
   } else {
