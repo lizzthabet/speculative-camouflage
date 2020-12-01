@@ -1,4 +1,5 @@
 import * as p5 from "p5"
+import { VoronoiSites, VoronoiVertex } from "voronoi/*"
 
 export interface Config {
   increment: number,
@@ -53,27 +54,52 @@ export enum ColorMode {
 }
 
 export interface ColorUploadSettings {
-  files: FileList,
-  sourceColor: ColorMode,
-  destinationColor: ColorMode,
+  files: FileList;
+  sourceColor: ColorMode;
+  destinationColor: ColorMode;
 }
 
 export interface ColorPaletteInput {
-  colors: ColorList,
-  colorMode: ColorMode,
-  colorPaletteSize: number,
+  colors: ColorList;
+  colorMode: ColorMode;
+  colorPaletteSize: number;
 }
 
 export interface ColorPaletteOutput {
-  colorPalette: ColorList,
-  colorClusters: Cluster,
+  colorPalette: ColorList;
+  colorClusters: Cluster;
 }
 
 export interface ColorPaletteViewOutput extends ColorPaletteOutput {
-  p5Instance: p5,
+  p5Instance: p5;
 }
 
 export interface ColorPaletteState {
   colorPalette: ColorList;
   colorClusters: Cluster;
+}
+
+export interface ShapeDisruptiveInput {
+  canvas: HTMLCanvasElement;
+  colorPalette: ColorList;
+  numSites: number;
+  options: ShapeDisruptiveOptions;
+  patternHeight: number;
+  patternWidth: number;
+}
+
+export interface ShapeDisruptiveOptions {
+  reuseColorPairings?: [Color, Color][];
+  reuseSites?: VoronoiSites;
+}
+
+export interface ShapeDisruptiveOutput {
+  canvas: HTMLCanvasElement;
+  colorPairings: [Color, Color][];
+  sites: VoronoiSites;
+}
+
+export enum Pattern {
+  SHAPE = 'SHAPE_DISRUPTIVE',
+  NOISE = 'NOISE'
 }

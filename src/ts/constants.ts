@@ -51,3 +51,5 @@ export const config: Config = {
   rSatThresh: 1,
   rBriThresh: 1.6,
 }
+
+export const DEFAULT_VORONOI_SITES = 25

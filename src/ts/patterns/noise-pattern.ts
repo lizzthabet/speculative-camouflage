@@ -81,18 +81,21 @@ function generateNoisePattern(
 
 /**
  * Generate the fractal noise pattern using colors from an uploaded image
+ *   Two sets of sorted kCentroids are mapped them to each other
+ *   Looping through the noise pattern data, determine which centroid the noise color belongs to
+ *   Based on the corresponding image centroid, draw a color from the image
  */
 export function drawNoisePatternWithImageColors({
   imageCentroids,
   imageClusters,
-  kMeansValue,
+  colorPaletteSize,
   mapBothOriginalAndPaletteColors,
   patternHeight,
   patternWidth,
 }: {
   imageCentroids: ColorList,
   imageClusters: Cluster,
-  kMeansValue: number,
+  colorPaletteSize: number,
   mapBothOriginalAndPaletteColors: boolean,
   patternHeight: number,
   patternWidth: number,
@@ -113,7 +116,7 @@ export function drawNoisePatternWithImageColors({
   const noiseLabColors = noiseColors.map(c => hsbToLab(c))
 
   // Cluster noise pattern colors into color palette
-  const { clusters: noiseLabClusters, centroids: noiseLabCentroids } = kMeans(noiseLabColors, kMeansValue, deltaE00Distance)
+  const { clusters: noiseLabClusters, centroids: noiseLabCentroids } = kMeans(noiseLabColors, colorPaletteSize, deltaE00Distance)
   const { sortedCentroids: noiseSortedLabCentroids } = sortByFrequency(noiseLabClusters, noiseLabCentroids)
 
   // Convert LAB colors back to HSB

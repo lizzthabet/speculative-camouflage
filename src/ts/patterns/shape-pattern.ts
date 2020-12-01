@@ -1,59 +1,31 @@
-/**
- * Some TODOS:
- * - Add some controls to dial in the pattern!
- *    - Number of cells in voronoi diagram
- *    - Number of colors in color palette
- *    - Randomizing the colors (random pairing for the same diagram, done again)
- *      - Weighted randomization, so that the colors in the palette are weighted by frequency
- *    - Randomizing the site generation
- * - Clean up and organize voronoi code
- */
-
 import Voronoi, { VoronoiVertex, VoronoiSites, VoronoiBoundingBox } from "voronoi/rhill-voronoi-core"
 import { randomInt } from "../helpers"
 import { createCanvasWrapper } from "../sketch";
-import { Color, ColorList, Cluster } from "../types"
+import { Color, ColorList, ShapeDisruptiveInput, ShapeDisruptiveOutput } from "../types"
 
-let lastSites: VoronoiSites
-let lastGradients: [Color, Color][] = []
-
-export function drawVoronoiPatternWithImageColors({
-  imageCentroids,
+export function generateShapeDisruptivePattern({
+  canvas,
+  colorPalette,
   numSites,
+  options,
   patternHeight,
-  patternWidth,
-  suppliedCanvas,
-  useLastGradients,
-  useLastSites,
-}: {
-  imageCentroids: ColorList,
-  imageClusters: Cluster,
-  numSites: number,
-  patternHeight: number,
-  patternWidth: number,
-  suppliedCanvas?: HTMLCanvasElement,
-  useLastGradients?: boolean,
-  useLastSites?: boolean,
-}) {
-  const canvas: HTMLCanvasElement = suppliedCanvas ? suppliedCanvas : document.createElement('canvas')
+  patternWidth
+}: ShapeDisruptiveInput): ShapeDisruptiveOutput {
   const ctx = canvas.getContext('2d')
 
-  // If we're not drawing on an existing canvas:
-  if (!suppliedCanvas) {
-    // Set the canvas height and width
-    canvas.height = patternHeight
+  if (canvas.width !== patternWidth) {
     canvas.width = patternWidth
+  }
 
-    // Add the canvas to a wrapper element and append to DOM
-    const canvasWrapper = createCanvasWrapper('voronoi-pattern', true, 'Voronoi pattern using image source colors')
-    canvasWrapper.appendChild(canvas)
+  if (canvas.height !== patternHeight) {
+    canvas.height = patternHeight
   }
 
   const boundingBox: VoronoiBoundingBox = { xl: 0, xr: patternWidth, yt: 0, yb: patternHeight }
-  const sites: VoronoiSites = useLastSites ? lastSites : []
+  const sites: VoronoiSites = options.reuseSites || []
 
-  // Create random sites if we're not reusing the previously generated sites
-  if (!useLastSites) {
+  // Create random sites if not using the previously generated sites
+  if (!options.reuseSites) {
     for (let i = 0; i < numSites; i++) {
       sites.push({
         x: randomInt(0, patternWidth),
@@ -62,39 +34,32 @@ export function drawVoronoiPatternWithImageColors({
     }
   }
 
-  // Save the random sites for future pattern iterations
-  lastSites = sites
-
-  // Compute the voronoi diagram
   const diagram = new Voronoi().compute(sites, boundingBox)
-
-  console.log(`Finished generating voronoi diagram with ${sites.length} sites`)
 
   // Simplify the voronoi cell and vertex data so it's easier to iterate through
   const simplifiedCells = diagram.cells.map(cell => {
     return cell.halfedges.map(edge => edge.getEndpoint())
   })
 
+  const prevColorPairings = options.reuseColorPairings
+  const currentColorPairings: [Color, Color][] = []
+
   // Loop through the simplified cell data to draw each cell with a gradient
   simplifiedCells.forEach((cell, idx) => {
     let gradient: CanvasGradient
-    if (useLastGradients) {
-      // Use the previous gradient color pairing
-      const [ colorA, colorB ] = lastGradients[idx]
+    if (prevColorPairings && prevColorPairings[idx]) {
+      const [ colorA, colorB ] = prevColorPairings[idx]
       // Regenerate the canvas gradient based on new cell size
       gradient = createGradientForCell(cell, ctx, colorA, colorB)
+      currentColorPairings.push([ colorA, colorB ])
     } else {
-      // Generate a random gradient from the supplied color palette
-      const randomGradientData = createRandomGradientForCell(cell, ctx, imageCentroids)
+      const randomGradientData = createRandomGradientForCell(cell, ctx, colorPalette)
       gradient = randomGradientData.gradient
-      // Save the gradient color pairings for future use
-      lastGradients[idx] = [ randomGradientData.colorA, randomGradientData.colorB ]
+      currentColorPairings.push([ randomGradientData.colorA, randomGradientData.colorB ])
     }
 
-    // Set the gradient as the style for this cell
     ctx.fillStyle = gradient
     ctx.beginPath()
-    // Loop through the cell's vertices to draw each one
     cell.forEach((vertex, i) => {
       if (i === 0) {
         // Note: `moveTo` just moves the pen coordinates to starting position;
@@ -108,7 +73,18 @@ export function drawVoronoiPatternWithImageColors({
     ctx.fill()
   })
 
-  return canvas
+  return { canvas, colorPairings: currentColorPairings, sites }
+}
+
+export function viewShapeDisruptivePattern(canvas: HTMLCanvasElement) {
+  const canvasWrapper = createCanvasWrapper(
+    'voronoi-pattern',
+    true,
+    'Voronoi pattern using image source colors'
+  )
+  canvasWrapper.appendChild(canvas)
+
+  return canvasWrapper
 }
 
 export function clearCanvas(canvas: HTMLCanvasElement) {
