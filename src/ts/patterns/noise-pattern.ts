@@ -1,7 +1,7 @@
 import * as p5 from "p5";
 import { DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, config, HUE_START, SAT_START, BRI_START } from "../constants";
 import { perlinHue, perlinBri, perlinSat, addRandomToOffset } from "../helpers";
-import { ColorMode, ColorList, Cluster } from "../types";
+import { ColorList,  NoisePatternInput, NoisePatternOutput } from "../types";
 import { kMeans, deltaE00Distance } from "../colors/clustering";
 import {
   hsbToLab,
@@ -10,7 +10,7 @@ import {
   mapColors,
   sortByFrequency,
 } from '../colors/palette'
-import { produceSketchFromColors, createSaveButtonForSketch, createCanvasWrapper } from "../sketch";
+import { createCanvasWrapper, drawColorsOnCanvas } from "./sketch-helpers";
 
 const EMPTY_SKETCH = (p: p5) => {
   p.setup = () => {}
@@ -23,7 +23,8 @@ const p = new p5(EMPTY_SKETCH, document.createElement('div'))
 /**
  * Generate the fractal noise pattern color data
  */
-function generateNoisePattern(
+// Potentially rename to generateNoiseSourceData?
+function generateNoiseSourcePattern(
   width: number = DEFAULT_CANVAS_WIDTH,
   height: number = DEFAULT_CANVAS_HEIGHT,
   randomSeed: number = config.nSeed,
@@ -81,34 +82,26 @@ function generateNoisePattern(
 
 /**
  * Generate the fractal noise pattern using colors from an uploaded image
- *   Two sets of sorted kCentroids are mapped them to each other
+ *   Two sets of sorted kCentroids (color palettes sorted by frequency of color) are mapped them to each other
  *   Looping through the noise pattern data, determine which centroid the noise color belongs to
  *   Based on the corresponding image centroid, draw a color from the image
  */
-export function drawNoisePatternWithImageColors({
-  imageCentroids,
-  imageClusters,
+export function generateNoisePattern({
+  canvas,
+  colorClusters,
+  colorPalette,
   colorPaletteSize,
-  mapBothOriginalAndPaletteColors,
+  noiseSeed,
+  options,
   patternHeight,
   patternWidth,
-}: {
-  imageCentroids: ColorList,
-  imageClusters: Cluster,
-  colorPaletteSize: number,
-  mapBothOriginalAndPaletteColors: boolean,
-  patternHeight: number,
-  patternWidth: number,
-}) {
-  const sketchInstances : { [key: string]: p5 } = {}
-  const wrapper = createCanvasWrapper(
-    'noise pattern',
-    true,
-    'Generated pattern using source image palette'
-  )
+}: NoisePatternInput): NoisePatternOutput {
+  // Set the height and width of canvas
+  canvas.height = patternHeight
+  canvas.width = patternWidth
 
   // Generate the noise pattern that will have its color palette swapped with an uploaded image
-  const noiseColors = generateNoisePattern(patternWidth, patternHeight)
+  const noiseColors = generateNoiseSourcePattern(patternWidth, patternHeight, noiseSeed, noiseSeed)
 
   console.log(`Noise pattern has ${noiseColors.length} colors`)
 
@@ -116,68 +109,43 @@ export function drawNoisePatternWithImageColors({
   const noiseLabColors = noiseColors.map(c => hsbToLab(c))
 
   // Cluster noise pattern colors into color palette
-  const { clusters: noiseLabClusters, centroids: noiseLabCentroids } = kMeans(noiseLabColors, colorPaletteSize, deltaE00Distance)
-  const { sortedCentroids: noiseSortedLabCentroids } = sortByFrequency(noiseLabClusters, noiseLabCentroids)
+  const { clusters: noiseLabClusters, centroids: noiseLabPalette } = kMeans(noiseLabColors, colorPaletteSize, deltaE00Distance)
+  const { sortedCentroids: noiseSortedLabPalette } = sortByFrequency(noiseLabClusters, noiseLabPalette)
 
   // Convert LAB colors back to HSB
-  const hsbNoiseCentroids = noiseSortedLabCentroids.map(c => labToHsb(c))
+  const hsbNoisePalette = noiseSortedLabPalette.map(c => labToHsb(c))
 
   // Create a map of noise pattern centroids to uploaded image color palette centroids
-  const patternToImagePalette = mapCentroids(hsbNoiseCentroids, imageCentroids, imageClusters)
+  const patternToImagePalette = mapCentroids(hsbNoisePalette, colorPalette, colorClusters)
 
-  // Map using the original colors from the image
-  if (mapBothOriginalAndPaletteColors) {
-    const mappedColors = mapColors(
-      noiseColors,
-      hsbNoiseCentroids,
-      patternToImagePalette,
-      deltaE00Distance,
-      true
-    )
-
-    const mappedSketch = produceSketchFromColors({
-      colors: mappedColors,
-      canvasWidth: patternWidth,
-      colorMode: ColorMode.RGB
-    })
-
-    const originalColorsWrapper = createCanvasWrapper(
-      'noise-pattern-using-original-colors',
-      true,
-      'Generated pattern using source image colors'
-    )
-
-    sketchInstances.originalColors = new p5(mappedSketch, originalColorsWrapper)
-
-    createSaveButtonForSketch(
-      originalColorsWrapper,
-      sketchInstances.originalColors,
-      `noise-pattern-using-original-colors-${patternWidth}x${patternHeight}`
-    )
-  }
-
-  // Map using the palette colors from the image
+  const useOriginalSourceColors = options.mapOriginalSourceColors || false
   const mappedColors = mapColors(
     noiseColors,
-    hsbNoiseCentroids,
+    hsbNoisePalette,
     patternToImagePalette,
     deltaE00Distance,
-    false
+    useOriginalSourceColors
   )
 
-  const mappedSketch = produceSketchFromColors({
+  drawColorsOnCanvas({
     colors: mappedColors,
-    canvasWidth: patternWidth,
-    colorMode: ColorMode.RGB
+    ctx: canvas.getContext('2d'),
+    scale: config.scale,
+    patternHeight,
+    patternWidth,
   })
 
-  sketchInstances.palette = new p5(mappedSketch, wrapper)
+  return { canvas }
+}
 
-  createSaveButtonForSketch(
-    wrapper,
-    sketchInstances.palette,
-    `noise-pattern-${patternWidth}x${patternHeight}`
+export function viewNoisePattern(canvas: HTMLCanvasElement) {
+  const wrapper = createCanvasWrapper(
+    'noise pattern',
+    true,
+    'Generated pattern using source image palette'
   )
 
-  return sketchInstances
+  wrapper.appendChild(canvas)
+
+  return wrapper
 }

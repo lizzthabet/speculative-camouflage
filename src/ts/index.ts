@@ -2,8 +2,7 @@ import { ColorMode, ColorPaletteOutput, Pattern } from "./types";
 import { inchesToPixels } from "./helpers";
 import { DEFAULT_RESOLUTION, DEFAULT_VORONOI_SITES } from "./constants";
 import { getColorsFromUploadedImage } from './colors/palette';
-import { drawNoisePatternWithImageColors } from "./patterns/noise-pattern";
-import { PatternState, ShapeDisruptivePattern, SourceImage } from "./state";
+import { NoisePattern, PatternState, ShapeDisruptivePattern, SourceImage } from "./state";
 import Worker from 'worker-loader!./workers/clustering.worker';
 
 const state = new PatternState()
@@ -44,7 +43,7 @@ window.addEventListener('load', () => {
         })
 
       } catch (error) {
-        console.error(`Error creating color palette from uploaded image: ${error && error.message}`)
+        console.error(`Error creating color palette from uploaded image: ${error && error.message}`, error)
       }
     })
   }
@@ -159,36 +158,35 @@ async function generatePatternFromUploadedImage({
    */
 
   // A temporary demo of processing color palette via web worker
-  if (window.Worker) {
-    const worker = new Worker()
+  // if (window.Worker) {
+  //   const worker = new Worker()
 
-    worker.onmessage = (event: MessageEvent<ColorPaletteOutput>) => {
-      console.log('**** Color palette complete from web worker ****')
-      worker.terminate()
-    }
+  //   worker.onmessage = (event: MessageEvent<ColorPaletteOutput>) => {
+  //     console.log('**** Color palette complete from web worker ****')
+  //     worker.terminate()
+  //   }
 
-    worker.onerror = (error: any) => {
-      console.error('Web worker errored out on color palette generation', error)
-    }
+  //   worker.onerror = (error: any) => {
+  //     console.error('Web worker errored out on color palette generation', error)
+  //   }
 
-    worker.postMessage({colors, colorPaletteSize: colorPaletteSize, colorMode})
-  }
+  //   worker.postMessage({colors, colorPaletteSize: colorPaletteSize, colorMode})
+  // }
 
-  const palette = sourceImage.getColorPalette(colorPaletteSize)
-  sourceImage.viewColorPalette(colorPaletteSize)
+  state.source.getColorPalette(colorPaletteSize)
+  state.source.viewColorPalette(colorPaletteSize)
 
   console.log('**** Finished color palette in main thread ****')
 
   switch (patternType) {
     case Pattern.NOISE:
-      drawNoisePatternWithImageColors({
-        imageCentroids: palette.colorPalette,
-        imageClusters: palette.colorClusters,
+      state.noisePattern = new NoisePattern(
+        state.source,
         colorPaletteSize,
-        mapBothOriginalAndPaletteColors: false,
-        patternHeight,
-        patternWidth,
-      })
+        { height: patternHeight, width: patternWidth }
+      )
+
+      state.noisePattern.generate({})
 
       break
     case Pattern.SHAPE:

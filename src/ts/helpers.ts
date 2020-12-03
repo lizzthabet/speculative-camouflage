@@ -1,5 +1,5 @@
 import * as p5 from 'p5';
-import { Setting } from './types';
+import { Color, ColorList, Setting } from './types';
 import { DEFAULT_RESOLUTION, FLOAT_SETTINGS } from './constants';
 
 export const parseIntOrFloat = (setting: Setting, value: string) => FLOAT_SETTINGS.includes(setting) ? parseFloat(value) : parseInt(value, 10)
@@ -38,3 +38,5 @@ export const scaleCanvasHeightToColors = (colorTotal: number, colorScale: number
 )
 
 export const inchesToPixels = (measurementInInches: number, resolution = DEFAULT_RESOLUTION) => measurementInInches * resolution
+
+export const colorToRgbString = ([r, g, b]: Color) => `rgb(${r}, ${g}, ${b})` 

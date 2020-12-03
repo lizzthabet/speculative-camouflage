@@ -5,8 +5,8 @@ import {
   ColorPaletteOutput,
   ColorPaletteViewOutput
 } from '../types'
-import { createColorPalette, flattenColors } from './palette';
-import { produceSketchFromColors, createSaveButtonForSketch, createCanvasWrapper } from "../sketch";
+import { flattenColors } from './palette';
+import { produceSketchFromColors, createSaveButtonForSketch, createCanvasWrapper } from "../patterns/sketch-helpers";
 
 /**
  * Cluster and draw colors with color palette swatches from a color list

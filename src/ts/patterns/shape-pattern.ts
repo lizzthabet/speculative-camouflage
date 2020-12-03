@@ -1,6 +1,6 @@
 import Voronoi, { VoronoiVertex, VoronoiSites, VoronoiBoundingBox } from "voronoi/rhill-voronoi-core"
 import { randomInt } from "../helpers"
-import { createCanvasWrapper } from "../sketch";
+import { createCanvasWrapper } from "./sketch-helpers";
 import { Color, ColorList, ShapeDisruptiveInput, ShapeDisruptiveOutput } from "../types"
 
 export function generateShapeDisruptivePattern({
@@ -77,14 +77,14 @@ export function generateShapeDisruptivePattern({
 }
 
 export function viewShapeDisruptivePattern(canvas: HTMLCanvasElement) {
-  const canvasWrapper = createCanvasWrapper(
+  const wrapper = createCanvasWrapper(
     'voronoi-pattern',
     true,
     'Voronoi pattern using image source colors'
   )
-  canvasWrapper.appendChild(canvas)
+  wrapper.appendChild(canvas)
 
-  return canvasWrapper
+  return wrapper
 }
 
 export function clearCanvas(canvas: HTMLCanvasElement) {

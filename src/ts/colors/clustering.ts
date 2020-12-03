@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import { isEqual } from "lodash";
 import { Color, Cluster, ColorList, NearestCentroid, DistanceCalculation } from "../types";
 import { randomInt } from "../helpers";
 import { ITERATION_LIMIT } from "../constants";
@@ -203,7 +203,7 @@ export const kMeans = (data: ColorList, k: number, distance: DistanceCalculation
   let clusters = clusterDataPoints(data, newCentroids, distance)
   let iterations = 0
 
-  while (!_.isEqual(previousCentroids, newCentroids) && iterations < ITERATION_LIMIT) {
+  while (!isEqual(previousCentroids, newCentroids) && iterations < ITERATION_LIMIT) {
     previousCentroids = newCentroids
     newCentroids = getNewCentroids(clusters)
     clusters = clusterDataPoints(data, newCentroids, distance)
@@ -211,7 +211,7 @@ export const kMeans = (data: ColorList, k: number, distance: DistanceCalculation
   }
 
   if (iterations >= ITERATION_LIMIT) {
-    throw new Error("Unable to cluster colors into `k` groups within set iteration limit. It's likely colors in the image are too similiar to cluster into `k` groups. Try running again with a lower `k` value.")
+    throw new Error(`Unable to cluster colors into ${k}'k' groups within set iteration limit. If colors in the image are too similar, try running again with a lower 'k' value. If there is a lot of color variation in the image, try running with a higher 'k' value.`)
   }
 
   console.log(`Ran clustering with ${iterations} iterations`)

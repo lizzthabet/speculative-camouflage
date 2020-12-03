@@ -1,13 +1,12 @@
 import * as p5 from "p5";
-import * as _ from "lodash";
-import { ColorList, Color, ColorMode } from "./types";
-import { config, PALETTE_SCALE } from "./constants";
-import { euclideanDistance, findNearestCentroid } from "./colors/clustering";
-import { scaleCanvasHeightToColors } from "./helpers";
+import { ColorList, Color, ColorMode } from "../types";
+import { config, PALETTE_SCALE } from "../constants";
+import { euclideanDistance, findNearestCentroid } from "../colors/clustering";
+import { colorToRgbString, scaleCanvasHeightToColors } from "../helpers";
 
 // This factory interates through a color list and returns the
 // closest centroid to the current color
-export const colorReducerFactory = (originalColors: ColorList, centroids: ColorList) => {
+const colorReducerFactory = (originalColors: ColorList, centroids: ColorList) => {
   // Keep track of the current index of the color array that we're incrementing through
   let colorIdx = 0;
 
@@ -28,7 +27,7 @@ export const colorReducerFactory = (originalColors: ColorList, centroids: ColorL
 
 // This factory iterates through a color list and returns the next color
 // in the list every time the function is called
-export const colorListIteratorFactory = (colorList: ColorList) => {
+const colorListIteratorFactory = (colorList: ColorList) => {
   let index = 0
 
   return () => {
@@ -44,7 +43,7 @@ export const colorListIteratorFactory = (colorList: ColorList) => {
   }
 }
 
-export const drawColorsOnCanvasFactory = ({
+const drawColorsOnCanvasFactory = ({
   canvasWidth,
   colorListLength,
   colorMode,
@@ -155,6 +154,7 @@ export const createCanvasWrapper = (id: string, appendToDom: boolean, title?: st
   return wrapper
 }
 
+// TODO: Refactor so this method can save both an HTML canvas and a p5 canvas
 export function createSaveButtonForSketch(canvasWrapper: HTMLElement, p5Instance: p5, filename: string) {
   const button = document.createElement('button')
   button.innerHTML = `Save <span class="sr-only">${canvasWrapper.id}</span> pattern`
@@ -169,4 +169,30 @@ export function createSaveButtonForSketch(canvasWrapper: HTMLElement, p5Instance
   canvasWrapper.appendChild(button)
 
   return button
+}
+
+export function drawColorsOnCanvas({
+  colors,
+  ctx,
+  patternHeight,
+  patternWidth,
+  scale,
+}: {
+  colors: ColorList;
+  ctx: CanvasRenderingContext2D;
+  patternHeight: number;
+  patternWidth: number;
+  scale: number;
+}) {
+  let i = 0
+  for (let y = 0; y < patternHeight; y += scale) {
+    for (let x = 0; x < patternWidth; x += scale) {
+      const rgbStyle = colorToRgbString(colors[i])
+      ctx.fillStyle = rgbStyle
+      ctx.fillRect(x, y, scale, scale)
+      i++
+    }
+  }
+
+  return ctx
 }

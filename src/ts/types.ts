@@ -53,6 +53,11 @@ export enum ColorMode {
   HSB = 'hsb',
 }
 
+export enum Pattern {
+  SHAPE = 'SHAPE_DISRUPTIVE',
+  NOISE = 'NOISE'
+}
+
 export interface ColorUploadSettings {
   files: FileList;
   sourceColor: ColorMode;
@@ -99,7 +104,21 @@ export interface ShapeDisruptiveOutput {
   sites: VoronoiSites;
 }
 
-export enum Pattern {
-  SHAPE = 'SHAPE_DISRUPTIVE',
-  NOISE = 'NOISE'
+export interface NoisePatternInput {
+  canvas: HTMLCanvasElement;
+  colorClusters: Cluster;
+  colorPalette: ColorList;
+  colorPaletteSize: number;
+  noiseSeed: number;
+  options: NoisePatternOptions;
+  patternHeight: number;
+  patternWidth: number;
+}
+
+export interface NoisePatternOptions {
+  mapOriginalSourceColors?: boolean;
+}
+
+export interface NoisePatternOutput {
+  canvas: HTMLCanvasElement;
 }
