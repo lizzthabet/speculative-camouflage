@@ -2,7 +2,7 @@ import { BRI_SCALE, HUE_SCALE, SAT_SCALE, UPLOAD_SCALE_WIDTH } from '../constant
 import {
   RgbaColor,
   Color,
-  ColorUploadSettings,
+  ColorUploadNoisePatternSettings,
   ColorMode,
   isColor,
   ColorList,
@@ -349,7 +349,7 @@ const extractPixelData = (image: HTMLImageElement) => {
  */
 
 export const getColorsFromUploadedImage = async (
-  { files, sourceColor, destinationColor }: ColorUploadSettings
+  { files, sourceColor, destinationColor }: ColorUploadNoisePatternSettings
 ): Promise<Color[]> => {
   try {
     const dataUrl = await loadFile(files)

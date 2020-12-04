@@ -1,7 +1,7 @@
 import * as p5 from "p5"
-import { VoronoiSites, VoronoiVertex } from "voronoi/*"
+import { VoronoiSites } from "voronoi/*"
 
-export interface Config {
+export interface NoisePatternConfig {
   increment: number,
   scale: number,
   nSeed: number,
@@ -13,7 +13,7 @@ export interface Config {
   rBriThresh: number,
 }
 
-export enum Setting {
+export enum NoisePatternSetting {
   increment,
   scale,
   nSeed,
@@ -58,7 +58,7 @@ export enum Pattern {
   NOISE = 'NOISE'
 }
 
-export interface ColorUploadSettings {
+export interface ColorUploadNoisePatternSettings {
   files: FileList;
   sourceColor: ColorMode;
   destinationColor: ColorMode;
@@ -108,8 +108,8 @@ export interface NoisePatternInput {
   canvas: HTMLCanvasElement;
   colorClusters: Cluster;
   colorPalette: ColorList;
-  colorPaletteSize: number;
-  noiseSeed: number;
+  noiseColors: ColorList;
+  noiseColorPalette: ColorList;
   options: NoisePatternOptions;
   patternHeight: number;
   patternWidth: number;

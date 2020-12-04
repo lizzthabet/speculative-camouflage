@@ -1,15 +1,16 @@
 import * as p5 from "p5";
-import { DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, config, HUE_START, SAT_START, BRI_START } from "../constants";
+import {
+  DEFAULT_CANVAS_HEIGHT,
+  DEFAULT_CANVAS_WIDTH,
+  config,
+  HUE_START,
+  SAT_START,
+  BRI_START
+} from "../constants";
 import { perlinHue, perlinBri, perlinSat, addRandomToOffset } from "../helpers";
 import { ColorList,  NoisePatternInput, NoisePatternOutput } from "../types";
-import { kMeans, deltaE00Distance } from "../colors/clustering";
-import {
-  hsbToLab,
-  labToHsb,
-  mapCentroids,
-  mapColors,
-  sortByFrequency,
-} from '../colors/palette'
+import { deltaE00Distance } from "../colors/clustering";
+import { mapCentroids, mapColors } from '../colors/palette'
 import { createCanvasWrapper, drawColorsOnCanvas } from "./sketch-helpers";
 
 const EMPTY_SKETCH = (p: p5) => {
@@ -23,8 +24,7 @@ const p = new p5(EMPTY_SKETCH, document.createElement('div'))
 /**
  * Generate the fractal noise pattern color data
  */
-// Potentially rename to generateNoiseSourceData?
-function generateNoiseSourcePattern(
+export function generateNoiseSourcePattern(
   width: number = DEFAULT_CANVAS_WIDTH,
   height: number = DEFAULT_CANVAS_HEIGHT,
   randomSeed: number = config.nSeed,
@@ -90,8 +90,8 @@ export function generateNoisePattern({
   canvas,
   colorClusters,
   colorPalette,
-  colorPaletteSize,
-  noiseSeed,
+  noiseColors,
+  noiseColorPalette,
   options,
   patternHeight,
   patternWidth,
@@ -100,28 +100,14 @@ export function generateNoisePattern({
   canvas.height = patternHeight
   canvas.width = patternWidth
 
-  // Generate the noise pattern that will have its color palette swapped with an uploaded image
-  const noiseColors = generateNoiseSourcePattern(patternWidth, patternHeight, noiseSeed, noiseSeed)
+  // Create a map of the noise pattern color palette to source image color palette
+  const patternToImagePalette = mapCentroids(noiseColorPalette, colorPalette, colorClusters)
 
-  console.log(`Noise pattern has ${noiseColors.length} colors`)
-
-  // Convert HSB colors to LAB color space
-  const noiseLabColors = noiseColors.map(c => hsbToLab(c))
-
-  // Cluster noise pattern colors into color palette
-  const { clusters: noiseLabClusters, centroids: noiseLabPalette } = kMeans(noiseLabColors, colorPaletteSize, deltaE00Distance)
-  const { sortedCentroids: noiseSortedLabPalette } = sortByFrequency(noiseLabClusters, noiseLabPalette)
-
-  // Convert LAB colors back to HSB
-  const hsbNoisePalette = noiseSortedLabPalette.map(c => labToHsb(c))
-
-  // Create a map of noise pattern centroids to uploaded image color palette centroids
-  const patternToImagePalette = mapCentroids(hsbNoisePalette, colorPalette, colorClusters)
-
+  // Loop through the noise pattern colors and substitute each one with the corresponding source image palette color
   const useOriginalSourceColors = options.mapOriginalSourceColors || false
   const mappedColors = mapColors(
     noiseColors,
-    hsbNoisePalette,
+    noiseColorPalette,
     patternToImagePalette,
     deltaE00Distance,
     useOriginalSourceColors

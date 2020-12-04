@@ -1,8 +1,8 @@
 import * as p5 from 'p5';
-import { Color, ColorList, Setting } from './types';
+import { Color, ColorList, NoisePatternSetting } from './types';
 import { DEFAULT_RESOLUTION, FLOAT_SETTINGS } from './constants';
 
-export const parseIntOrFloat = (setting: Setting, value: string) => FLOAT_SETTINGS.includes(setting) ? parseFloat(value) : parseInt(value, 10)
+export const parseIntOrFloat = (setting: NoisePatternSetting, value: string) => FLOAT_SETTINGS.includes(setting) ? parseFloat(value) : parseInt(value, 10)
 
 export const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min)
 

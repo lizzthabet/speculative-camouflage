@@ -1,11 +1,18 @@
-import * as p5 from "p5";
 import { VoronoiVertex } from "voronoi/*";
 import { createColorPalette } from "./colors/palette";
 import { viewColorPalette } from "./colors/visualize";
 import { config, DEFAULT_VORONOI_SITES } from "./constants";
-import { generateNoisePattern, viewNoisePattern } from "./patterns/noise-pattern";
+import { generateNoisePattern, viewNoisePattern, generateNoiseSourcePattern } from "./patterns/noise-pattern";
 import { clearCanvas, generateShapeDisruptivePattern, viewShapeDisruptivePattern } from "./patterns/shape-pattern";
-import { Color, ColorList, ColorMode, ColorPaletteOutput, ColorPaletteState, NoisePatternOptions, ShapeDisruptiveOptions } from "./types";
+import {
+  Color,
+  ColorList,
+  ColorMode,
+  ColorPaletteOutput,
+  ColorPaletteState,
+  NoisePatternOptions,
+  ShapeDisruptiveOptions
+} from "./types";
 
 export class PatternState {
   private sourceImage: null | SourceImage = null;
@@ -45,21 +52,34 @@ export class SourceImage {
 
   constructor(private rawColorData: ColorList, private mode: ColorMode) {}
 
-  get colorMode() {
+  private paletteKey(size: number, seed?: number) {
+    return `${size}${seed ? '-' + seed : ''}`
+  }
+
+  private getPalette(size: number, seed?: number) {
+    const key = this.paletteKey(size, seed)
+    return this.palettes[key] || undefined
+  }
+
+  private setPalette(palette: ColorPaletteOutput, seed?: number) {
+    const key = this.paletteKey(palette.colorPalette.length, seed)
+    this.palettes[key] = palette
+  }
+
+  public get colorMode() {
     return this.mode
   }
 
-  private getPalette(size: number) {
-    return this.palettes[String(size)] || undefined
+  public set colorData(colors: ColorList) {
+    this.rawColorData = colors
   }
 
-  private setPalette(palette: ColorPaletteOutput) {
-    const size = String(palette.colorPalette.length)
-    this.palettes[size] = palette
+  public get colorData() {
+    return this.rawColorData
   }
 
-  public getColorPalette(size: number) {
-    const colorPaletteExists = this.getPalette(size)
+  public getColorPalette(size: number, seed?: number) {
+    const colorPaletteExists = this.getPalette(size, seed)
     if (colorPaletteExists) {
       return colorPaletteExists
     }
@@ -76,8 +96,8 @@ export class SourceImage {
     return palette
   }
 
-  public viewColorPalette(size: number) {
-    const palette = this.getColorPalette(size)
+  public viewColorPalette(size: number, seed?: number) {
+    const palette = this.getColorPalette(size, seed)
 
     return viewColorPalette(palette)
   }
@@ -172,9 +192,8 @@ export class ShapeDisruptivePattern {
 
 export class NoisePattern {
   private canvas: HTMLCanvasElement = null
-  private noiseColorPalette: ColorList = null // This could be a noiseImage: SourceImage
   private noiseSeed: number = config.nSeed
-  private p5: p5 = null
+  private noiseSourceImage: SourceImage = null
 
   constructor(
     private sourceImage: SourceImage,
@@ -196,23 +215,33 @@ export class NoisePattern {
   }
 
   public generate(options: NoisePatternOptions) {
+    // Create the noise source and color data
+    if (!this.noiseSourceImage) {
+      const rawNoiseData = generateNoiseSourcePattern(
+        this.patternSize.width,
+        this.patternSize.height,
+        this.noiseSeed,
+        this.noiseSeed
+      )
+
+      this.noiseSourceImage = new SourceImage(rawNoiseData, ColorMode.HSB)
+    }
+
+    // Fetch the color palettes that will compose the noise pattern
+    const { colorPalette: noiseColorPalette } = this.noiseSourceImage.getColorPalette(this.colorPaletteSize, this.noiseSeed)
+    const { colorClusters, colorPalette } = this.sourceImage.getColorPalette(this.colorPaletteSize)
+
+    // Clear any existing canvas state
     if (this.canvas) {
       this.clearCanvas()
     }
 
-    // Notes about how to implement and cache color palette iterations:
-    // create a noise source image, but how to start the data? maybe this method takes care of it
-    // then, refactor the generate noise pattern to take in a noise color palette and noise data
-    // then, refactor source image color palette function to take in a seed value, so color palettes are saved with that
-    // ie: const { noiseColors, noiseColorPalette } = this.noiseSourceImage.getColorPalette(this.colorPaletteSize, this.noiseSeed)
-    // ie: generateNoisePattern({ colorPalette, noiseColorPalette, noiseColors })
-    const { colorClusters, colorPalette } = this.sourceImage.getColorPalette(this.colorPaletteSize)
     const { canvas } = generateNoisePattern({
       canvas: this.canvas || document.createElement('canvas'),
       colorClusters,
       colorPalette,
-      colorPaletteSize: this.colorPaletteSize,
-      noiseSeed: this.noiseSeed,
+      noiseColors: this.noiseSourceImage.colorData,
+      noiseColorPalette,
       options,
       patternHeight: this.patternSize.height,
       patternWidth: this.patternSize.width,
@@ -237,7 +266,16 @@ export class NoisePattern {
   public setDimensions() {}
 
   // TODO
-  public setNoiseSeed() {}
+  public setNoiseSeed(newSeed: number) {
+    if (newSeed === this.noiseSeed) {
+      return
+    }
+
+    this.noiseSeed = newSeed
+    this.noiseSourceImage.colorData = generateNoiseSourcePattern(this.patternSize.width, this.patternSize.height, this.noiseSeed, this.noiseSeed)
+
+    this.generate({})
+  }
 
   // TODO
   public save() {}

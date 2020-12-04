@@ -1,4 +1,4 @@
-import { Setting, Config } from './types';
+import { NoisePatternSetting, NoisePatternConfig } from './types';
 
 export const DEFAULT_CANVAS_HEIGHT = 700
 export const DEFAULT_CANVAS_WIDTH = 1000
@@ -24,11 +24,11 @@ export const SAT_SCALE = 100
 export const BRI_SCALE = 100
 
 export const FLOAT_SETTINGS = [
-  Setting.increment,
-  Setting.nAdjust,
-  Setting.rHueThresh,
-  Setting.rSatThresh,
-  Setting.rBriThresh
+  NoisePatternSetting.increment,
+  NoisePatternSetting.nAdjust,
+  NoisePatternSetting.rHueThresh,
+  NoisePatternSetting.rSatThresh,
+  NoisePatternSetting.rBriThresh
 ]
 
 // Clustering algorithm iteration limit
@@ -40,7 +40,7 @@ export const UPLOAD_SCALE_WIDTH = 200
 // Pattern generation resolution
 export const DEFAULT_RESOLUTION = 72
 
-export const config: Config = {
+export const config: NoisePatternConfig = {
   increment: 0.1,
   scale: 5,
   nSeed: 10,
