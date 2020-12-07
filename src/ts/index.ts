@@ -1,44 +1,43 @@
-import { ColorMode, ColorPaletteOutput, Pattern } from "./types";
+import { ColorMode, Pattern } from "./types";
 import { inchesToPixels } from "./helpers";
 import { DEFAULT_RESOLUTION, DEFAULT_VORONOI_SITES } from "./constants";
 import { getColorsFromUploadedImage } from './colors/palette';
 import { NoisePattern, PatternState, ShapeDisruptivePattern, SourceImage } from "./state";
+import { CreatePatternElements, createShapePatternEditForms, createNoisePatternEditForm } from "./forms";
 import Worker from 'worker-loader!./workers/clustering.worker';
 
 const state = new PatternState()
 
 window.addEventListener('load', () => {
   // Grab the UI elements that will be interacted with
-  const imageUploadForm = document.getElementById('upload-image-form')
+  const createPatternForm = document.getElementById(CreatePatternElements.Form)
 
   // Extract and draw the color palette from an uploaded image based on form data
-  if (imageUploadForm) {
-    imageUploadForm.addEventListener('submit', async (e: Event) => {
+  if (createPatternForm) {
+    createPatternForm.addEventListener('submit', async (e: Event) => {
       e.preventDefault()
 
       try {
         const formElements = (e.target as HTMLFormElement).elements;
-        const fileInput = formElements.namedItem('file-upload') as HTMLInputElement
-        const kMeansInput = formElements.namedItem('k-means') as HTMLInputElement
-        const colorModeInput = formElements.namedItem('color-mode') as HTMLInputElement
-        const patternHeightInput = formElements.namedItem('pattern-height') as HTMLInputElement
-        const patternWidthInput = formElements.namedItem('pattern-width') as HTMLInputElement
-        const patternTypeInput = formElements.namedItem('pattern-type') as HTMLInputElement
+        const fileInput = formElements.namedItem(CreatePatternElements.ImageUpload) as HTMLInputElement
+        const paletteSizeInput = formElements.namedItem(CreatePatternElements.PaletteSize) as HTMLInputElement
+        const heightInput = formElements.namedItem(CreatePatternElements.PatternHeight) as HTMLInputElement
+        const widthInput = formElements.namedItem(CreatePatternElements.PatternWidth) as HTMLInputElement
+        const noiseCheckbox = formElements.namedItem(Pattern.NOISE) as HTMLInputElement
+        const shapeCheckbox = formElements.namedItem(Pattern.SHAPE) as HTMLInputElement
 
         const files = fileInput.files as FileList
-        const colorMode = colorModeInput.value as ColorMode
-        const colorPaletteSize = parseInt(kMeansInput.value)
-        const resolution = DEFAULT_RESOLUTION
-        const patternHeight = inchesToPixels(parseInt(patternHeightInput.value), resolution)
-        const patternWidth = inchesToPixels(parseInt(patternWidthInput.value), resolution)
-        const patternType = patternTypeInput.value as Pattern
+        const colorPaletteSize = parseInt(paletteSizeInput.value)
+        const patternHeight = inchesToPixels(parseInt(heightInput.value), DEFAULT_RESOLUTION)
+        const patternWidth = inchesToPixels(parseInt(widthInput.value), DEFAULT_RESOLUTION)
+        const patterns = { [Pattern.NOISE]: noiseCheckbox.checked, [Pattern.SHAPE]: shapeCheckbox.checked }
 
-        await generatePatternFromUploadedImage({
-          colorMode,
+        await generatePatterns({
+          colorMode: ColorMode.RGB,
           files,
           colorPaletteSize,
           patternHeight,
-          patternType,
+          patterns,
           patternWidth,
         })
 
@@ -49,94 +48,19 @@ window.addEventListener('load', () => {
   }
 })
 
-function createVoronoiEditForm(numSites: number, colorPaletteSize: number) {
-  const wrapper = document.createElement('figure')
-
-  const heading = document.createElement('h4')
-  heading.innerText = 'Adjust pattern settings'
-
-  const form: HTMLFormElement = document.createElement('form')
-  form.id = `voronoi-edit`
-
-  const cellsLabel = document.createElement('label')
-  cellsLabel.innerText = 'Number of cells'
-  const cellsInput: HTMLInputElement = document.createElement('input')
-  cellsInput.id = 'cells'
-  cellsInput.type = 'number'
-  cellsInput.min = '2'
-  cellsInput.max = '50'
-  cellsInput.value = String(numSites) || ''
-
-  const kMeansLabel = document.createElement('label')
-  kMeansLabel.innerText = 'Number of extracted colors'
-  const kMeansInput: HTMLInputElement = document.createElement('input')
-  kMeansInput.id = 'kmeans'
-  kMeansInput.type = 'number'
-  kMeansInput.min = '1'
-  kMeansInput.max = '32'
-  kMeansInput.value = String(colorPaletteSize) || ''
-
-  const submitButton: HTMLButtonElement = document.createElement('button')
-  submitButton.innerText = 'Regenerate voronoi pattern'
-  submitButton.type = 'submit'
-
-  form.appendChild(cellsLabel)
-  form.appendChild(cellsInput)
-  form.appendChild(kMeansLabel)
-  form.appendChild(kMeansInput)
-  form.appendChild(submitButton)
-
-  form.addEventListener('submit', (e: Event) => {
-    e.preventDefault()
-
-    const cellsValue = parseInt(cellsInput.value)
-    const kMeansValue = parseInt(kMeansInput.value)
-
-    // TODO: In an ideal world, only one setting is changed at a time
-    state.shapeDisruptivePattern.setSites(cellsValue)
-    state.shapeDisruptivePattern.regeneratePalette(kMeansValue)
-  })
-
-  // Create a button to randomize the colors and color pairing
-  const randomizeGradientsButton: HTMLButtonElement = document.createElement('button')
-  randomizeGradientsButton.innerText = 'Randomize gradient pairings'
-
-  randomizeGradientsButton.addEventListener('click', (e: Event) => {
-    e.preventDefault()
-
-    state.shapeDisruptivePattern.regenerateColors()
-  })
-
-  // Create a button to randomize the site generation
-  const randomizeSitesButton: HTMLButtonElement = document.createElement('button')
-  randomizeSitesButton.innerText = 'Randomize site locations'
-  randomizeSitesButton.addEventListener('click', (e: Event) => {
-    e.preventDefault()
-
-    state.shapeDisruptivePattern.regenerateSites()
-  })
-
-  wrapper.appendChild(heading)
-  wrapper.appendChild(randomizeGradientsButton)
-  wrapper.appendChild(randomizeSitesButton)
-  wrapper.appendChild(form)
-
-  return wrapper
-}
-
-async function generatePatternFromUploadedImage({
+async function generatePatterns({
   colorMode,
   files,
   colorPaletteSize,
   patternHeight,
-  patternType,
+  patterns,
   patternWidth,
 }: {
   colorMode: ColorMode,
   files: FileList,
   colorPaletteSize: number,
   patternHeight: number,
-  patternType: string,
+  patterns: { [key in Pattern]: boolean },
   patternWidth: number,
 }) {
 
@@ -146,8 +70,8 @@ async function generatePatternFromUploadedImage({
     destinationColor: colorMode,
   })
 
-  // Add the source image to the state
   // TODO: Handle multiple images being uploaded by clearing the DOM of previous content
+  // Add the source image to the state
   const sourceImage = new SourceImage(colors, colorMode)
   state.source = sourceImage
 
@@ -178,31 +102,30 @@ async function generatePatternFromUploadedImage({
 
   console.log('**** Finished color palette in main thread ****')
 
-  switch (patternType) {
-    case Pattern.NOISE:
-      state.noisePattern = new NoisePattern(
-        state.source,
-        colorPaletteSize,
-        { height: patternHeight, width: patternWidth }
-      )
+  if (patterns[Pattern.NOISE]) {
+    state.noisePattern = new NoisePattern(
+      state.source,
+      colorPaletteSize,
+      { height: patternHeight, width: patternWidth }
+    )
 
-      state.noisePattern.generate({})
+    state.noisePattern.generate({})
+    // TODO: Consider moving the edit form creation and logic to the pattern class
+    const editForm = createNoisePatternEditForm(state.noisePattern)
+    document.body.appendChild(editForm)
+  }
 
-      break
-    case Pattern.SHAPE:
-      state.shapeDisruptivePattern = new ShapeDisruptivePattern(
-        state.source,
-        colorPaletteSize,
-        { height: patternHeight, width: patternWidth }
-      )
+  if (patterns[Pattern.SHAPE]) {
+    state.shapeDisruptivePattern = new ShapeDisruptivePattern(
+      state.source,
+      colorPaletteSize,
+      { height: patternHeight, width: patternWidth }
+    )
 
-      state.shapeDisruptivePattern.generate(DEFAULT_VORONOI_SITES, {})
+    state.shapeDisruptivePattern.generate(DEFAULT_VORONOI_SITES, {})
 
-      const editForm = createVoronoiEditForm(DEFAULT_VORONOI_SITES, colorPaletteSize)
-      document.body.appendChild(editForm)
-
-      break
-    default:
-      throw new Error(`Pattern type with name ${patternType} is not supported. Supply a different pattern type.`)
+    // TODO: Consider moving the edit form creation and logic to the pattern class
+    const editForm = createShapePatternEditForms(state.shapeDisruptivePattern)
+    document.body.appendChild(editForm)
   }
 }

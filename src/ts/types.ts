@@ -54,8 +54,8 @@ export enum ColorMode {
 }
 
 export enum Pattern {
-  SHAPE = 'SHAPE_DISRUPTIVE',
-  NOISE = 'NOISE'
+  SHAPE = 'shape-disruptive',
+  NOISE = 'noise'
 }
 
 export interface ColorUploadNoisePatternSettings {

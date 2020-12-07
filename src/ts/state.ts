@@ -80,7 +80,8 @@ export class SourceImage {
 
   public getColorPalette(size: number, seed?: number) {
     const colorPaletteExists = this.getPalette(size, seed)
-    if (colorPaletteExists) {
+
+    if (!!colorPaletteExists) {
       return colorPaletteExists
     }
 
@@ -91,7 +92,8 @@ export class SourceImage {
       colorMode: this.colorMode
     })
 
-    this.setPalette(palette)
+    // TODO: Visualize the new color palette!
+    this.setPalette(palette, seed)
 
     return palette
   }
@@ -184,7 +186,7 @@ export class ShapeDisruptivePattern {
   }
 
   // TODO
-  public setDimensions() {}
+  public setDimensions({ width, height }: { width: number; height: number; }) {}
 
   // TODO
   public save() {}
@@ -263,16 +265,23 @@ export class NoisePattern {
   }
 
   // TODO
-  public setDimensions() {}
+  public setDimensions({ width, height }: { width: number; height: number; }) {}
 
-  // TODO
   public setNoiseSeed(newSeed: number) {
     if (newSeed === this.noiseSeed) {
       return
     }
 
     this.noiseSeed = newSeed
-    this.noiseSourceImage.colorData = generateNoiseSourcePattern(this.patternSize.width, this.patternSize.height, this.noiseSeed, this.noiseSeed)
+    // Generate new source color data for the noise pattern
+    this.noiseSourceImage.colorData = generateNoiseSourcePattern(
+      this.patternSize.width,
+      this.patternSize.height,
+      this.noiseSeed,
+      this.noiseSeed
+    )
+    // Create a color palette with the new source color data
+    this.noiseSourceImage.getColorPalette(this.colorPaletteSize, newSeed)
 
     this.generate({})
   }

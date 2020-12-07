@@ -17,20 +17,14 @@
        <img src="img/subway-example.png" />
     </p>
     <p>When a pattern is successfully generated, you can double-click on any canvas to save the outputted images.</p>
-    <form id="upload-image-form" autocomplete="off">
-      <h2>Generate a pattern</h2>
+    <form id="create-pattern-form" autocomplete="off" aria-labelledby="create-pattern-heading">
+      <h2 id="create-pattern-heading">Generate a pattern</h2>
 
-      <label for="file-upload">Upload a source image</label>
-      <input type="file" id="file-upload" multiple="false" accept="image/*" required />
+      <label for="source-image">Upload a source image</label>
+      <input type="file" id="source-image" multiple="false" accept="image/*" required />
 
-      <label for="k-means">Number of colors to extract from source</label>
-      <input type="number" id="k-means" min="2" max="32" step="1" value="8" required />
-
-      <label for="color-mode">Image color mode</label>
-      <select id="color-mode" required>
-        <option value="rgb">RGB</option>
-        <option value="hsb">HSB</option>
-      </select>
+      <label for="color-palette-size">Color palette size</label>
+      <input type="number" id="color-palette-size" min="2" max="32" step="1" value="8" required />
 
       <label for="pattern-width">Pattern width (inches)</label>
       <input type="number" id="pattern-width" min="1" max="32" step="0.25" value="15" required />
@@ -38,13 +32,19 @@
       <label for="pattern-height">Pattern height (inches)</label>
       <input type="number" id="pattern-height" min="1" max="32" step="0.25" value="10" required />
 
-      <label for="pattern-type">Choose a pattern</label>
-      <select id="pattern-type" required>
-        <option value="SHAPE_DISRUPTIVE">Shape disruptive</option>
-        <option value="NOISE">Noise</option>
-      </select>
+      <fieldset>
+        <legend>Choose patterns</legend>
+        <label for="shape-disruptive">
+          <input id="shape-disruptive" type="checkbox" value="shape-disruptive"/>
+          Shape disruptive
+        </label>
+        <label for="noise">
+          <input id="noise" type="checkbox" value="noise"/>
+          Noise
+        </label>
+      </fieldset>
 
-      <button id="upload-image-submit" type="submit">Create pattern*</button>
+      <button id="create-pattern-submit" type="submit">Create pattern*</button>
       <p>*Note: this may take a couple minutes! Debugging logs are available in the console.</p>
     </form>
 
