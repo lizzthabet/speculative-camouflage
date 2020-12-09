@@ -187,10 +187,14 @@ export function drawColorsOnCanvas({
   let i = 0
   for (let y = 0; y < patternHeight; y += scale) {
     for (let x = 0; x < patternWidth; x += scale) {
-      const rgbStyle = colorToRgbString(colors[i])
-      ctx.fillStyle = rgbStyle
-      ctx.fillRect(x, y, scale, scale)
-      i++
+      if (colors[i]) {
+        const rgbStyle = colorToRgbString(colors[i])
+        ctx.fillStyle = rgbStyle
+        ctx.fillRect(x, y, scale, scale)
+        i++
+      } else {
+        console.warn('Colors array length does not align with pattern dimensions; rendering may be skewed.')
+      }
     }
   }
 

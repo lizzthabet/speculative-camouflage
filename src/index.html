@@ -23,28 +23,36 @@
       <label for="source-image">Upload a source image</label>
       <input type="file" id="source-image" multiple="false" accept="image/*" required />
 
+      <fieldset class="inline-fieldset">
+        <legend>Pattern dimensions (inches)</legend>
+
+        <label class="inline-label-wrapper" for="pattern-width">
+          <input class="inline-input" type="number" id="pattern-width" min="1" max="32" step="0.25" value="15" required />
+          width
+        </label>
+
+        <label class="inline-label-wrapper" for="pattern-height">
+          <input class="inline-input" type="number" id="pattern-height" min="1" max="32" step="0.25" value="10" required />
+          height
+        </label>
+      </fieldset>
+
       <label for="color-palette-size">Color palette size</label>
       <input type="number" id="color-palette-size" min="2" max="32" step="1" value="8" required />
 
-      <label for="pattern-width">Pattern width (inches)</label>
-      <input type="number" id="pattern-width" min="1" max="32" step="0.25" value="15" required />
-
-      <label for="pattern-height">Pattern height (inches)</label>
-      <input type="number" id="pattern-height" min="1" max="32" step="0.25" value="10" required />
-
       <fieldset>
         <legend>Choose patterns</legend>
-        <label for="shape-disruptive">
-          <input id="shape-disruptive" type="checkbox" value="shape-disruptive"/>
+        <label class="checkbox-label" for="shape-disruptive">
+          <input class="checkbox-input" id="shape-disruptive" type="checkbox" value="shape-disruptive"/>
           Shape disruptive
         </label>
-        <label for="noise">
-          <input id="noise" type="checkbox" value="noise"/>
+        <label class="checkbox-label"for="noise">
+          <input class="checkbox-input" id="noise" type="checkbox" value="noise"/>
           Noise
         </label>
       </fieldset>
 
-      <button id="create-pattern-submit" type="submit">Create pattern*</button>
+      <button id="create-pattern-submit" type="submit">Generate*</button>
       <p>*Note: this may take a couple minutes! Debugging logs are available in the console.</p>
     </form>
 

@@ -21,12 +21,14 @@ enum InputType {
 }
 
 interface FormConfig {
+  formClassName?: string;
   heading?: HtmlElementConfig;
   id: string;
   controls: (ButtonConfig | FormInputConfig | FormFieldsetConfig)[];
 }
 
 interface HtmlElementConfig {
+  className?: string;
   id: string | null;
   htmlElement: string;
   text: string;
@@ -37,15 +39,19 @@ interface FormInputConfig extends HtmlElementConfig {
   htmlElement: typeof INPUT;
   inputMin?: number;
   inputMax?: number;
+  inputStep?: number;
+  labelClassName?: string;
   type: InputType;
 }
 
 interface FormFieldsetConfig extends HtmlElementConfig {
+  fieldsetClassName?: string;
   htmlElement: typeof FIELDSET;
   options?: FormInputConfig[]
 }
 
 interface ButtonConfig extends HtmlElementConfig {
+  buttonClassName?: string;
   htmlElement: typeof BUTTON;
   type: typeof SUBMIT | typeof BUTTON;
   clickListener?: (event: Event) => void
@@ -74,8 +80,6 @@ export const CREATE_PATTERN_FORM: FormConfig = {
     {
       id: CreatePatternElements.ImageUpload,
       htmlElement: INPUT,
-      inputMin: 2,
-      inputMax: 32,
       text: 'Upload a source image',
       type: InputType.File,
     },
@@ -136,6 +140,7 @@ enum EditShapeControls {
 
 const EDIT_SHAPE_COLORS_FORM: FormConfig = {
   id: `${EditShapeControls.Colors}-form`,
+  formClassName: 'inline-form',
   controls: [{
     id: EditShapeControls.Colors,
     htmlElement: BUTTON,
@@ -146,6 +151,7 @@ const EDIT_SHAPE_COLORS_FORM: FormConfig = {
 
 const EDIT_SHAPE_SHAPES_FORM: FormConfig = {
   id: `${EditShapeControls.Shapes}-form`,
+  formClassName: 'inline-form',
   controls: [{
     id: EditShapeControls.Shapes,
     htmlElement: BUTTON,
@@ -156,17 +162,22 @@ const EDIT_SHAPE_SHAPES_FORM: FormConfig = {
 
 const EDIT_SHAPE_PALETTE_SIZE_FORM: FormConfig = {
   id: `${EditShapeControls.PaletteSize}-form`,
+  formClassName: 'inline-form',
   controls: [
     {
       id: EditShapeControls.PaletteSize,
       htmlElement: INPUT,
+      className: 'inline-input',
       text: 'Color palette size',
+      labelClassName: 'inline-label',
       type: InputType.Number,
       inputMax: 32,
       inputMin: 2,
+      inputStep: 1,
     },
     {
       id: `${EditShapeControls.PaletteSize}-submit`,
+      buttonClassName: 'inline-button',
       htmlElement: BUTTON,
       text: 'Refresh',
       type: SUBMIT
@@ -176,17 +187,22 @@ const EDIT_SHAPE_PALETTE_SIZE_FORM: FormConfig = {
 
 const EDIT_SHAPE_NUM_SHAPES_FORM: FormConfig = {
   id: `${EditShapeControls.NumShapes}-form`,
+  formClassName: 'inline-form',
   controls: [
     {
       id: EditShapeControls.NumShapes,
       htmlElement: INPUT,
+      className: 'inline-input',
       text: 'Number of shapes',
+      labelClassName: 'inline-label',
       type: InputType.Number,
       inputMax: 200,
       inputMin: 2,
+      inputStep: 1,
     },
     {
       id: `${EditShapeControls.NumShapes}-submit`,
+      buttonClassName: 'inline-button',
       htmlElement: BUTTON,
       text: 'Refresh',
       type: SUBMIT
@@ -198,23 +214,38 @@ const EDIT_SHAPE_PATTERN_SIZE_FORM: FormConfig = {
   id: 'shape-pattern-size-form',
   controls: [
     {
-      id: EditShapeControls.PatternWidth,
-      htmlElement: INPUT,
-      text: 'Width (inches)',
-      type: InputType.Number,
-      inputMax: 32,
-      inputMin: 1,
-    },
-    {
-      id: EditShapeControls.PatternHeight,
-      htmlElement: INPUT,
-      text: 'Height (inches)',
-      type: InputType.Number,
-      inputMax: 32,
-      inputMin: 1,
+      id: 'shape-pattern-size-dimensions',
+      text: 'Pattern dimensions (inches)',
+      htmlElement: FIELDSET,
+      fieldsetClassName: 'inline-fieldset',
+      options: [
+        {
+          id: EditShapeControls.PatternWidth,
+          className: 'inline-input',
+          htmlElement: INPUT,
+          text: 'width',
+          labelClassName: 'inline-label-wrapper',
+          type: InputType.Number,
+          inputMax: 32,
+          inputMin: 1,
+          inputStep: 0.25,
+        },
+        {
+          id: EditShapeControls.PatternHeight,
+          className: 'inline-input',
+          htmlElement: INPUT,
+          text: 'height',
+          labelClassName: 'inline-label-wrapper',
+          type: InputType.Number,
+          inputMax: 32,
+          inputMin: 1,
+          inputStep: 0.25,
+        },
+      ]
     },
     {
       id: 'shape-pattern-size-submit',
+      buttonClassName: 'inline-button',
       htmlElement: BUTTON,
       text: 'Refresh',
       type: SUBMIT
@@ -281,17 +312,22 @@ enum EditNoiseControls {
 
 const EDIT_NOISE_PALETTE_SIZE_FORM: FormConfig = {
   id: `${EditNoiseControls.PaletteSize}-form`,
+  formClassName: 'inline-form',
   controls: [
     {
       id: EditNoiseControls.PaletteSize,
       htmlElement: INPUT,
+      className: 'inline-input',
       text: 'Color palette size',
+      labelClassName: 'inline-label',
       type: InputType.Number,
       inputMin: 2,
       inputMax: 32,
+      inputStep: 1,
     },
     {
       id: `${EditNoiseControls.PaletteSize}-submit`,
+      buttonClassName: 'inline-button',
       htmlElement: BUTTON,
       type: SUBMIT,
       text: 'Refresh'
@@ -301,17 +337,22 @@ const EDIT_NOISE_PALETTE_SIZE_FORM: FormConfig = {
 
 const EDIT_NOISE_SEED_FORM: FormConfig = {
   id: `${EditNoiseControls.Seed}-form`,
+  formClassName: 'inline-form',
   controls: [
     {
       id: EditNoiseControls.Seed,
       htmlElement: INPUT,
+      className: 'inline-input',
       text: 'Noise seed',
+      labelClassName: 'inline-label',
       type: InputType.Number,
       inputMin: 1,
       inputMax: 500,
+      inputStep: 1,
     },
     {
       id: `${EditNoiseControls.Seed}-submit`,
+      buttonClassName: 'inline-button',
       htmlElement: BUTTON,
       type: SUBMIT,
       text: 'Refresh'
@@ -321,25 +362,41 @@ const EDIT_NOISE_SEED_FORM: FormConfig = {
 
 const EDIT_NOISE_PATTERN_SIZE_FORM: FormConfig = {
   id: 'noise-pattern-size-form',
+  formClassName: 'inline-form',
   controls: [
     {
-      id: EditNoiseControls.PatternWidth,
-      htmlElement: INPUT,
-      text: 'Width (inches)',
-      type: InputType.Number,
-      inputMax: 32,
-      inputMin: 1,
-    },
-    {
-      id: EditNoiseControls.PatternHeight,
-      htmlElement: INPUT,
-      text: 'Height (inches)',
-      type: InputType.Number,
-      inputMax: 32,
-      inputMin: 1,
+      id: 'noise-pattern-size-dimensions',
+      text: 'Pattern dimensions (inches)',
+      htmlElement: FIELDSET,
+      fieldsetClassName: 'inline-fieldset',
+      options: [
+        {
+          id: EditNoiseControls.PatternWidth,
+          className: 'inline-input',
+          htmlElement: INPUT,
+          text: 'width',
+          labelClassName: 'inline-label-wrapper',
+          type: InputType.Number,
+          inputMax: 32,
+          inputMin: 1,
+          inputStep: 0.25,
+        },
+        {
+          id: EditNoiseControls.PatternHeight,
+          className: 'inline-input',
+          htmlElement: INPUT,
+          text: 'height',
+          labelClassName: 'inline-label-wrapper',
+          type: InputType.Number,
+          inputMax: 32,
+          inputMin: 1,
+          inputStep: 0.25,
+        },
+      ]
     },
     {
       id: 'noise-pattern-size-submit',
+      buttonClassName: 'inline-button',
       htmlElement: BUTTON,
       text: 'Refresh',
       type: SUBMIT
@@ -382,7 +439,6 @@ export function createNoisePatternEditForm (pattern: NoisePattern) {
   wrapper.appendChild(paletteSizeForm)
   wrapper.appendChild(patternSizeForm)
 
-
   return wrapper
 }
 
@@ -390,10 +446,16 @@ function createInput(config: FormInputConfig) {
   const label: HTMLLabelElement = document.createElement(LABEL)
   label.innerText = config.text
   label.htmlFor = config.id
+  if (config.labelClassName) {
+    label.classList.add(config.labelClassName)
+  }
 
   const input: HTMLInputElement = document.createElement(config.htmlElement)
   input.id = config.id
   input.type = config.type
+  if (config.className) {
+    input.classList.add(config.className)
+  }
 
   if (config.type !== InputType.Checkbox) {
     input.required = true
@@ -408,6 +470,7 @@ function createInput(config: FormInputConfig) {
   if (input.type === InputType.Number) {
     input.min = String(config.inputMin);
     input.max = String(config.inputMax);
+    input.step = String(config.inputStep);
   } else if (input.type === InputType.File) {
     input.multiple = false
     input.accept = 'image/*'
@@ -420,6 +483,10 @@ function createFieldset(config: FormFieldsetConfig) {
   const fieldset: HTMLFieldSetElement = document.createElement(config.htmlElement)
   fieldset.id = config.id
 
+  if (config.fieldsetClassName) {
+    fieldset.classList.add(config.fieldsetClassName)
+  }
+
   const legend: HTMLLegendElement = document.createElement(LEGEND)
   legend.innerText = config.text
 
@@ -428,8 +495,9 @@ function createFieldset(config: FormFieldsetConfig) {
   if (config.options) {
     config.options.forEach(inputConfig => {
       const { label, input } = createInput(inputConfig)
+      // Nest the input element in the label element for styling
+      label.prepend(input)
       fieldset.appendChild(label)
-      fieldset.appendChild(input)
     })
   }
 
@@ -442,6 +510,10 @@ function createButton(config: ButtonConfig) {
   button.textContent = config.text
   button.type = config.type
 
+  if (config.buttonClassName) {
+    button.classList.add(config.buttonClassName)
+  }
+
   if (config.clickListener) {
     button.addEventListener('click', config.clickListener)
   }
@@ -453,6 +525,10 @@ export function createForm(formConfig: FormConfig, submitListener: (e: Event) =>
   const form: HTMLFormElement = document.createElement(FORM)
   form.id = formConfig.id
   form.autocomplete = 'off'
+
+  if (formConfig.formClassName) {
+    form.classList.add(formConfig.formClassName)
+  }
 
   if (formConfig.heading) {
     const heading = document.createElement(formConfig.heading.htmlElement)

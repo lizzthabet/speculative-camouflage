@@ -25,14 +25,13 @@ h2 {
   font-weight: normal;
 }
 
-label, input, select {
+label, legend, input, select {
   display: block;
-  margin: 0.5rem 0;
+  margin-bottom: 1rem;
 }
 
 input, select {
   margin-bottom: 2.3rem;
-  margin-top: 1rem;
 }
 
 input, select, button {
@@ -41,11 +40,64 @@ input, select, button {
   text-transform: uppercase;
 }
 
+input[type="number"] {
+  text-align: center;
+}
+
+fieldset {
+  border: unset;
+  margin: unset;
+  margin-bottom: 2rem;
+  padding: unset;
+}
+
 button {
   cursor: pointer;
   margin: 0.5rem 0;
   padding: 0.5rem;
   display: block;
+}
+
+.checkbox-label {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  font-family: 'Courier New', Courier, monospace;
+  margin: unset;
+  text-transform: uppercase;
+}
+
+.checkbox-input {
+  height: 1.5rem;
+  margin: unset;
+  margin-right: 0.75rem;
+  width: 1.5rem;
+}
+
+.inline-fieldset, .inline-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.inline-form {
+  margin-bottom: 2rem;
+}
+
+.inline-label-wrapper {
+  align-items: center;
+  display: flex;
+  margin-bottom: unset;
+  margin-right: 3rem;
+}
+
+.inline-input, .inline-label, .inline-button {
+  margin: unset;
+  margin-right: 0.5rem;
+}
+
+.inline-input + .inline-button {
+  margin-left: 2rem;
 }
 
 .sr-only {

@@ -39,4 +39,4 @@ export const scaleCanvasHeightToColors = (colorTotal: number, colorScale: number
 
 export const inchesToPixels = (measurementInInches: number, resolution = DEFAULT_RESOLUTION) => measurementInInches * resolution
 
-export const colorToRgbString = ([r, g, b]: Color) => `rgb(${r}, ${g}, ${b})` 
+export const colorToRgbString = ([r, g, b]: Color) => `rgb(${r}, ${g}, ${b})`

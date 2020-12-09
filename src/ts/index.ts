@@ -1,4 +1,4 @@
-import { ColorMode, Pattern } from "./types";
+import { ColorMode, CreatePatternsInput, Pattern } from "./types";
 import { inchesToPixels } from "./helpers";
 import { DEFAULT_RESOLUTION, DEFAULT_VORONOI_SITES } from "./constants";
 import { getColorsFromUploadedImage } from './colors/palette';
@@ -9,10 +9,8 @@ import Worker from 'worker-loader!./workers/clustering.worker';
 const state = new PatternState()
 
 window.addEventListener('load', () => {
-  // Grab the UI elements that will be interacted with
   const createPatternForm = document.getElementById(CreatePatternElements.Form)
 
-  // Extract and draw the color palette from an uploaded image based on form data
   if (createPatternForm) {
     createPatternForm.addEventListener('submit', async (e: Event) => {
       e.preventDefault()
@@ -28,9 +26,14 @@ window.addEventListener('load', () => {
 
         const files = fileInput.files as FileList
         const colorPaletteSize = parseInt(paletteSizeInput.value)
-        const patternHeight = inchesToPixels(parseInt(heightInput.value), DEFAULT_RESOLUTION)
-        const patternWidth = inchesToPixels(parseInt(widthInput.value), DEFAULT_RESOLUTION)
+        const patternHeight = inchesToPixels(parseFloat(heightInput.value), DEFAULT_RESOLUTION)
+        const patternWidth = inchesToPixels(parseFloat(widthInput.value), DEFAULT_RESOLUTION)
         const patterns = { [Pattern.NOISE]: noiseCheckbox.checked, [Pattern.SHAPE]: shapeCheckbox.checked }
+
+        // For now, do not continue if no pattern is selected
+        if (!noiseCheckbox.checked && !shapeCheckbox.checked) {
+          return
+        }
 
         await generatePatterns({
           colorMode: ColorMode.RGB,
@@ -55,14 +58,7 @@ async function generatePatterns({
   patternHeight,
   patterns,
   patternWidth,
-}: {
-  colorMode: ColorMode,
-  files: FileList,
-  colorPaletteSize: number,
-  patternHeight: number,
-  patterns: { [key in Pattern]: boolean },
-  patternWidth: number,
-}) {
+}: CreatePatternsInput) {
 
   const colors = await getColorsFromUploadedImage({
     files,

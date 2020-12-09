@@ -37,15 +37,13 @@ export function generateNoiseSourcePattern(
   p.noiseSeed(noiseSeed)
   p.noiseDetail(config.nDetail, config.nAdjust)
 
-  const COLS = Math.floor(width / config.scale)
-  const ROWS = Math.floor(height / config.scale)
   let yoffset = 0
 
   // Loop through canvas space
-  for (let y = 0; y < ROWS; y++) {
+  for (let y = 0; y < height; y += config.scale) {
     let xHueOff = HUE_START, xSatOff = SAT_START, xBriOff = BRI_START
 
-    for (let x = 0; x < COLS; x++) {
+    for (let x = 0; x < width; x += config.scale) {
       let hue: number, bri: number, sat: number
 
       // Introduce random additions to Perlin noise values
@@ -76,7 +74,7 @@ export function generateNoiseSourcePattern(
     // Increment the y offset value
     yoffset += config.increment
   }
-
+  console.log('noise colors:', colors.length)
   return colors
 }
 

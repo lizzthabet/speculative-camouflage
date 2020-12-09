@@ -58,6 +58,15 @@ export enum Pattern {
   NOISE = 'noise'
 }
 
+export interface CreatePatternsInput {
+  colorMode: ColorMode,
+  files: FileList,
+  colorPaletteSize: number,
+  patternHeight: number,
+  patterns: { [key in Pattern]: boolean },
+  patternWidth: number,
+}
+
 export interface ColorUploadNoisePatternSettings {
   files: FileList;
   sourceColor: ColorMode;
