@@ -185,8 +185,11 @@ export class ShapeDisruptivePattern {
     this.generate(numSites, {})
   }
 
-  // TODO
-  public setDimensions({ width, height }: { width: number; height: number; }) {}
+  public setDimensions(size: { width: number; height: number; }) {
+    this.patternSize = size
+
+    this.generate(this.numSites, {})
+  }
 
   // TODO
   public save() {}
@@ -264,8 +267,12 @@ export class NoisePattern {
     this.generate({})
   }
 
-  // TODO
-  public setDimensions({ width, height }: { width: number; height: number; }) {}
+  // TODO: This method will need to handle regenerating the noise source data and it should add dimensions to color palette keys
+  public setDimensions(size: { width: number; height: number; }) {
+    this.patternSize = size
+
+    this.generate({})
+  }
 
   public setNoiseSeed(newSeed: number) {
     if (newSeed === this.noiseSeed) {

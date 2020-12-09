@@ -126,7 +126,7 @@ export function viewNoisePattern(canvas: HTMLCanvasElement) {
   const wrapper = createCanvasWrapper(
     'noise pattern',
     true,
-    'Generated pattern using source image palette'
+    'Noise pattern'
   )
 
   wrapper.appendChild(canvas)

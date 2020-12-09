@@ -78,9 +78,9 @@ export function generateShapeDisruptivePattern({
 
 export function viewShapeDisruptivePattern(canvas: HTMLCanvasElement) {
   const wrapper = createCanvasWrapper(
-    'voronoi-pattern',
+    'shape-disruptive-pattern',
     true,
-    'Voronoi pattern using image source colors'
+    'Shape disruptive pattern'
   )
   wrapper.appendChild(canvas)
 

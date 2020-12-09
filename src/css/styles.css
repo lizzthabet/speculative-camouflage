@@ -14,8 +14,11 @@ figure {
   margin: 1rem 0;
 }
 
-img {
+img, canvas {
   box-shadow: 0.6rem 0.6rem 1rem #a2a2a2;
+}
+
+img {
   display: block;
   margin-top: 2rem;
   max-width: 100%;
