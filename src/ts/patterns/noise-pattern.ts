@@ -74,7 +74,7 @@ export function generateNoiseSourcePattern(
     // Increment the y offset value
     yoffset += config.increment
   }
-  console.log('noise colors:', colors.length)
+
   return colors
 }
 

@@ -2,6 +2,8 @@ import { VoronoiVertex } from "voronoi/*";
 import { createColorPalette } from "./colors/palette";
 import { viewColorPalette } from "./colors/visualize";
 import { config, DEFAULT_VORONOI_SITES } from "./constants";
+import { createNoisePatternEditForm, EditNoiseControls, EditShapeControls, createShapePatternEditForms } from "./forms";
+import { pixelsToInches } from "./helpers";
 import { generateNoisePattern, viewNoisePattern, generateNoiseSourcePattern } from "./patterns/noise-pattern";
 import { clearCanvas, generateShapeDisruptivePattern, viewShapeDisruptivePattern } from "./patterns/shape-pattern";
 import {
@@ -109,6 +111,7 @@ export class ShapeDisruptivePattern {
   private canvas: HTMLCanvasElement = null
   private colorPairings: [Color, Color][] = null
   private sites: VoronoiVertex[] = null
+  private editForm: HTMLElement = null
 
   constructor(
     private sourceImage: SourceImage,
@@ -193,6 +196,17 @@ export class ShapeDisruptivePattern {
 
   // TODO
   public save() {}
+
+  public createEditForm() {
+    const defaultValues = {
+      [EditShapeControls.PaletteSize]: String(this.colorPaletteSize),
+      [EditShapeControls.PatternHeight]: String(pixelsToInches(this.patternSize.height)),
+      [EditShapeControls.PatternWidth]: String(pixelsToInches(this.patternSize.width)),
+      [EditShapeControls.NumShapes]: String(this.numSites),
+    }
+
+    return createShapePatternEditForms(this, defaultValues)
+  }
 }
 
 export class NoisePattern {
@@ -295,4 +309,15 @@ export class NoisePattern {
 
   // TODO
   public save() {}
+
+  public createEditForm() {
+    const defaultValues = {
+      [EditNoiseControls.PaletteSize]: String(this.colorPaletteSize),
+      [EditNoiseControls.PatternHeight]: String(pixelsToInches(this.patternSize.height)),
+      [EditNoiseControls.PatternWidth]: String(pixelsToInches(this.patternSize.width)),
+      [EditNoiseControls.Seed]: String(this.noiseSeed),
+    }
+
+    return createNoisePatternEditForm(this, defaultValues)
+  }
 }

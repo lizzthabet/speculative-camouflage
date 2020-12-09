@@ -1,4 +1,3 @@
-import { DEFAULT_RESOLUTION } from "./constants";
 import { inchesToPixels } from "./helpers";
 import { NoisePattern, ShapeDisruptivePattern } from "./state";
 
@@ -59,7 +58,7 @@ interface ButtonConfig extends HtmlElementConfig {
 }
 
 // Html creation functions
-function createInput(config: FormInputConfig) {
+function createInput(config: FormInputConfig, defaultValue?: string) {
   const label: HTMLLabelElement = document.createElement(LABEL)
   label.innerText = config.text
   label.htmlFor = config.id
@@ -93,10 +92,14 @@ function createInput(config: FormInputConfig) {
     input.accept = 'image/*'
   }
 
+  if (defaultValue) {
+    input.value = defaultValue
+  }
+
   return { label, input }
 }
 
-function createFieldset(config: FormFieldsetConfig) {
+function createFieldset(config: FormFieldsetConfig, defaultValues?: { [key: string]: string }) {
   const fieldset: HTMLFieldSetElement = document.createElement(config.htmlElement)
   fieldset.id = config.id
 
@@ -111,7 +114,8 @@ function createFieldset(config: FormFieldsetConfig) {
 
   if (config.options) {
     config.options.forEach(inputConfig => {
-      const { label, input } = createInput(inputConfig)
+      const defaultValue = defaultValues && defaultValues[inputConfig.id] || undefined
+      const { label, input } = createInput(inputConfig, defaultValue)
       // Nest the input element in the label element for styling
       label.prepend(input)
       fieldset.appendChild(label)
@@ -138,7 +142,11 @@ function createButton(config: ButtonConfig) {
   return { button }
 }
 
-export function createForm(formConfig: FormConfig, submitListener: (e: Event) => void) {
+export function createForm(
+  formConfig: FormConfig,
+  submitListener: (e: Event) => void,
+  defaultValues?: { [key: string]: string }
+) {
   const form: HTMLFormElement = document.createElement(FORM)
   form.id = formConfig.id
   form.autocomplete = 'off'
@@ -159,12 +167,13 @@ export function createForm(formConfig: FormConfig, submitListener: (e: Event) =>
   formConfig.controls.forEach(element => {
     switch (element.htmlElement) {
       case INPUT:
-        const { label, input } = createInput(element as FormInputConfig)
+        const defaultValue = defaultValues && defaultValues[element.id] || undefined
+        const { label, input } = createInput(element as FormInputConfig, defaultValue)
         form.appendChild(label)
         form.appendChild(input)
         break
       case FIELDSET:
-        const { fieldset } = createFieldset(element as FormFieldsetConfig)
+        const { fieldset } = createFieldset(element as FormFieldsetConfig, defaultValues)
         form.appendChild(fieldset)
         break
       case BUTTON:
@@ -246,7 +255,8 @@ export enum CreatePatternElements {
   SubmitButton = 'create-pattern-submit'
 }
 
-enum EditShapeControls {
+// Unique ids attached to each form element
+export enum EditShapeControls {
   Colors = 'randomize-colors',
   NumShapes = 'number-of-shapes',
   PaletteSize = 'shape-color-palette-size',
@@ -255,7 +265,8 @@ enum EditShapeControls {
   Shapes = 'randomize-shapes',
 }
 
-enum EditNoiseControls {
+// Unique ids attached to each form element
+export enum EditNoiseControls {
   PaletteSize = 'noise-color-palette-size',
   PatternHeight = 'noise-pattern-height',
   PatternWidth = 'noise-pattern-width',
@@ -363,6 +374,7 @@ const EDIT_NOISE_PALETTE_SIZE_FORM: FormConfig = {
 
 const EDIT_SHAPE_PATTERN_SIZE_FORM: FormConfig = {
   id: 'shape-pattern-size-form',
+  formClassName: 'inline-form',
   controls: [
     {
       ...PATTERN_SIZE_FIELDSET,
@@ -410,7 +422,10 @@ const EDIT_NOISE_PATTERN_SIZE_FORM: FormConfig = {
   ]
 }
 
-export function createShapePatternEditForms(pattern: ShapeDisruptivePattern) {
+export function createShapePatternEditForms(
+  pattern: ShapeDisruptivePattern,
+  defaultValues?: { [key in EditShapeControls]?: string }
+) {
   const wrapper = document.createElement('figure')
   const heading = document.createElement('h4')
   heading.innerText = 'Adjust shape disruptive pattern'
@@ -419,26 +434,26 @@ export function createShapePatternEditForms(pattern: ShapeDisruptivePattern) {
   const { form: regenerateColorsForm } = createForm(EDIT_SHAPE_COLORS_FORM, (e) => {
     e.preventDefault()
     pattern.regenerateColors()
-  })
+  }, defaultValues)
 
   const { form: regenerateSitesForm } = createForm(EDIT_SHAPE_SHAPES_FORM, (e) => {
     e.preventDefault()
     pattern.regenerateSites()
-  })
+  }, defaultValues)
 
   const { form: paletteSizeForm } = createForm(EDIT_SHAPE_PALETTE_SIZE_FORM, (e) => {
     e.preventDefault()
     const formElements = (e.target as HTMLFormElement).elements
     const paletteSizeInput = formElements.namedItem(EditShapeControls.PaletteSize) as HTMLInputElement
     pattern.regeneratePalette(parseInt(paletteSizeInput.value))
-  })
+  }, defaultValues)
 
   const { form: numShapesForm } = createForm(EDIT_SHAPE_NUM_SHAPES_FORM, (e) => {
     e.preventDefault()
     const formElements = (e.target as HTMLFormElement).elements
     const numShapesInput = formElements.namedItem(EditShapeControls.NumShapes) as HTMLInputElement
     pattern.setSites(parseInt(numShapesInput.value))
-  })
+  }, defaultValues)
 
   const { form: patternSizeForm } = createForm(EDIT_SHAPE_PATTERN_SIZE_FORM, (e) => {
     e.preventDefault()
@@ -446,10 +461,10 @@ export function createShapePatternEditForms(pattern: ShapeDisruptivePattern) {
     const widthInput = formElements.namedItem(EditShapeControls.PatternWidth) as HTMLInputElement
     const heightInput = formElements.namedItem(EditShapeControls.PatternHeight) as HTMLInputElement
     pattern.setDimensions({
-      width: inchesToPixels(parseInt(widthInput.value), DEFAULT_RESOLUTION),
-      height: inchesToPixels(parseInt(heightInput.value), DEFAULT_RESOLUTION)
+      width: inchesToPixels(parseInt(widthInput.value)),
+      height: inchesToPixels(parseInt(heightInput.value))
     })
-  })
+  }, defaultValues)
 
   wrapper.appendChild(regenerateColorsForm)
   wrapper.appendChild(regenerateSitesForm)
@@ -460,7 +475,10 @@ export function createShapePatternEditForms(pattern: ShapeDisruptivePattern) {
   return wrapper
 }
 
-export function createNoisePatternEditForm (pattern: NoisePattern) {
+export function createNoisePatternEditForm (
+  pattern: NoisePattern,
+  defaultValues?: { [key in EditNoiseControls]?: string }
+) {
   const wrapper = document.createElement('figure')
   const heading = document.createElement('h4')
   heading.innerText = 'Adjust noise pattern'
@@ -471,14 +489,14 @@ export function createNoisePatternEditForm (pattern: NoisePattern) {
     const formElements = (e.target as HTMLFormElement).elements
     const paletteSizeInput = formElements.namedItem(EditNoiseControls.PaletteSize) as HTMLInputElement
     pattern.regeneratePalette(parseInt(paletteSizeInput.value))
-  })
+  }, defaultValues)
 
   const { form: noiseSeedForm } = createForm(EDIT_NOISE_SEED_FORM, (e) => {
     e.preventDefault()
     const formElements = (e.target as HTMLFormElement).elements
     const seedInput = formElements.namedItem(EditNoiseControls.Seed) as HTMLInputElement
     pattern.setNoiseSeed(parseInt(seedInput.value))
-  })
+  }, defaultValues)
 
   const { form: patternSizeForm } = createForm(EDIT_NOISE_PATTERN_SIZE_FORM, (e) => {
     e.preventDefault()
@@ -486,10 +504,10 @@ export function createNoisePatternEditForm (pattern: NoisePattern) {
     const widthInput = formElements.namedItem(EditNoiseControls.PatternWidth) as HTMLInputElement
     const heightInput = formElements.namedItem(EditNoiseControls.PatternHeight) as HTMLInputElement
     pattern.setDimensions({
-      width: inchesToPixels(parseInt(widthInput.value), DEFAULT_RESOLUTION),
-      height: inchesToPixels(parseInt(heightInput.value), DEFAULT_RESOLUTION)
+      width: inchesToPixels(parseInt(widthInput.value)),
+      height: inchesToPixels(parseInt(heightInput.value))
     })
-  })
+  }, defaultValues)
 
   wrapper.appendChild(noiseSeedForm)
   wrapper.appendChild(paletteSizeForm)

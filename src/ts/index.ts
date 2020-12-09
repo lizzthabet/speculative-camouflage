@@ -1,6 +1,6 @@
 import { ColorMode, CreatePatternsInput, Pattern } from "./types";
 import { inchesToPixels } from "./helpers";
-import { DEFAULT_RESOLUTION, DEFAULT_VORONOI_SITES } from "./constants";
+import { DEFAULT_VORONOI_SITES } from "./constants";
 import { getColorsFromUploadedImage } from './colors/palette';
 import { NoisePattern, PatternState, ShapeDisruptivePattern, SourceImage } from "./state";
 import { CreatePatternElements, createShapePatternEditForms, createNoisePatternEditForm } from "./forms";
@@ -26,8 +26,8 @@ window.addEventListener('load', () => {
 
         const files = fileInput.files as FileList
         const colorPaletteSize = parseInt(paletteSizeInput.value)
-        const patternHeight = inchesToPixels(parseFloat(heightInput.value), DEFAULT_RESOLUTION)
-        const patternWidth = inchesToPixels(parseFloat(widthInput.value), DEFAULT_RESOLUTION)
+        const patternHeight = inchesToPixels(parseFloat(heightInput.value))
+        const patternWidth = inchesToPixels(parseFloat(widthInput.value))
         const patterns = { [Pattern.NOISE]: noiseCheckbox.checked, [Pattern.SHAPE]: shapeCheckbox.checked }
 
         // For now, do not continue if no pattern is selected
@@ -106,8 +106,8 @@ async function generatePatterns({
     )
 
     state.noisePattern.generate({})
-    // TODO: Consider moving the edit form creation and logic to the pattern class
-    const editForm = createNoisePatternEditForm(state.noisePattern)
+
+    const editForm = state.noisePattern.createEditForm()
     document.body.appendChild(editForm)
   }
 
@@ -120,8 +120,7 @@ async function generatePatterns({
 
     state.shapeDisruptivePattern.generate(DEFAULT_VORONOI_SITES, {})
 
-    // TODO: Consider moving the edit form creation and logic to the pattern class
-    const editForm = createShapePatternEditForms(state.shapeDisruptivePattern)
+    const editForm = state.shapeDisruptivePattern.createEditForm()
     document.body.appendChild(editForm)
   }
 }
