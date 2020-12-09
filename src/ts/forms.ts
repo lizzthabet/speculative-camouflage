@@ -125,7 +125,7 @@ function createFieldset(config: FormFieldsetConfig, defaultValues?: { [key: stri
   return { fieldset }
 }
 
-function createButton(config: ButtonConfig) {
+export function createButton(config: ButtonConfig) {
   const button: HTMLButtonElement = document.createElement(BUTTON)
   button.id = config.id
   button.textContent = config.text
@@ -137,6 +137,11 @@ function createButton(config: ButtonConfig) {
 
   if (config.clickListener) {
     button.addEventListener('click', config.clickListener)
+    button.addEventListener('keypress', (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        config.clickListener(event)
+      }
+    })
   }
 
   return { button }

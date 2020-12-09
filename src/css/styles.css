@@ -61,6 +61,11 @@ button {
   display: block;
 }
 
+button a {
+  color: unset;
+  text-decoration: unset;
+}
+
 .checkbox-label {
   align-items: center;
   display: flex;

@@ -1,6 +1,6 @@
 import Voronoi, { VoronoiVertex, VoronoiSites, VoronoiBoundingBox } from "voronoi/rhill-voronoi-core"
 import { randomInt } from "../helpers"
-import { createCanvasWrapper } from "./sketch-helpers";
+import { createCanvasWrapper, createSaveButtonForSketch } from "./sketch-helpers";
 import { Color, ColorList, ShapeDisruptiveInput, ShapeDisruptiveOutput } from "../types"
 
 export function generateShapeDisruptivePattern({
@@ -84,14 +84,15 @@ export function viewShapeDisruptivePattern(canvas: HTMLCanvasElement) {
   )
   wrapper.appendChild(canvas)
 
+  const saveButton = createSaveButtonForSketch({ canvas, filename: 'shape-disruptive-pattern' })
+  wrapper.appendChild(saveButton)
+
   return wrapper
 }
 
 export function clearCanvas(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext('2d')
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-  console.log('Clearing canvas context')
 
   return canvas
 }

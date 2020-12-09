@@ -11,7 +11,7 @@ import { perlinHue, perlinBri, perlinSat, addRandomToOffset } from "../helpers";
 import { ColorList,  NoisePatternInput, NoisePatternOutput } from "../types";
 import { deltaE00Distance } from "../colors/clustering";
 import { mapCentroids, mapColors } from '../colors/palette'
-import { createCanvasWrapper, drawColorsOnCanvas } from "./sketch-helpers";
+import { createCanvasWrapper, createSaveButtonForSketch, drawColorsOnCanvas } from "./sketch-helpers";
 
 const EMPTY_SKETCH = (p: p5) => {
   p.setup = () => {}
@@ -130,6 +130,9 @@ export function viewNoisePattern(canvas: HTMLCanvasElement) {
   )
 
   wrapper.appendChild(canvas)
+
+  const saveButton = createSaveButtonForSketch({ canvas, filename: 'noise-pattern' })
+  wrapper.appendChild(saveButton)
 
   return wrapper
 }

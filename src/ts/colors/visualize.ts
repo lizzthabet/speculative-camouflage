@@ -29,7 +29,9 @@ export function viewColorPalette(palette: ColorPaletteOutput): ColorPaletteViewO
 
   const p5Instance = new p5(labSketchSortedColors, wrapper)
 
-  createSaveButtonForSketch(wrapper, p5Instance, wrapper.id)
+  const saveButton = createSaveButtonForSketch({ p5Instance, filename: 'source-image-color-palette' })
+
+  wrapper.appendChild(saveButton)
 
   return { ...palette, p5Instance }
 }

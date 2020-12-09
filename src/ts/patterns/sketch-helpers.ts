@@ -2,6 +2,7 @@ import * as p5 from "p5";
 import { ColorList, Color, ColorMode } from "../types";
 import { config, PALETTE_SCALE } from "../constants";
 import { euclideanDistance, findNearestCentroid } from "../colors/clustering";
+import { createButton } from "../forms";
 import { colorToRgbString, scaleCanvasHeightToColors } from "../helpers";
 
 // This factory interates through a color list and returns the
@@ -154,19 +155,37 @@ export const createCanvasWrapper = (id: string, appendToDom: boolean, title?: st
   return wrapper
 }
 
-// TODO: Refactor so this method can save both an HTML canvas and a p5 canvas
-export function createSaveButtonForSketch(canvasWrapper: HTMLElement, p5Instance: p5, filename: string) {
-  const button = document.createElement('button')
-  button.innerHTML = `Save <span class="sr-only">${canvasWrapper.id}</span> pattern`
+export function createSaveButtonForSketch({ p5Instance, canvas, filename }: {
+  p5Instance?: p5,
+  canvas?: HTMLCanvasElement,
+  filename: string;
+}) {
+  let button: HTMLButtonElement
 
-  button.addEventListener('click', () => p5Instance.saveCanvas(filename, 'png'))
-  button.addEventListener('keypress', (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      p5Instance.saveCanvas(filename, 'png')
-    }
-  })
+  if (p5Instance) {
+    button = createButton({
+      id: `save-pattern-${filename.toLowerCase()}`,
+      htmlElement: 'button',
+      type: 'button',
+      text: 'Save pattern',
+      clickListener: () => p5Instance.saveCanvas(filename, 'png'),
+    }).button
+  } else if (canvas) {
+    button = createButton({
+      id: `save-pattern-${filename.toLowerCase()}`,
+      htmlElement: 'button',
+      type: 'button',
+      text: '',
+    }).button
 
-  canvasWrapper.appendChild(button)
+    const downloadLink: HTMLAnchorElement = document.createElement('a')
+    downloadLink.download = filename
+    downloadLink.href = canvas.toDataURL()
+    downloadLink.textContent = 'Save pattern'
+    button.prepend(downloadLink)
+  } else {
+    throw new Error("Supply a p5 instance or HTML canvas to create a save button.")
+  }
 
   return button
 }
