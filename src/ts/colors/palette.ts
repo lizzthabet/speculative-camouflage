@@ -1,4 +1,4 @@
-import { BRI_SCALE, HUE_SCALE, SAT_SCALE, UPLOAD_SCALE_WIDTH } from '../constants'
+import { BRI_SCALE, HUE_SCALE, SAT_SCALE, UPLOAD_SCALE_WIDTH, DEFAULT_CANVAS_WIDTH } from '../constants'
 import {
   RgbaColor,
   Color,
@@ -10,9 +10,11 @@ import {
   DistanceCalculation,
   ColorPaletteInput,
   ColorPaletteOutput,
+  ColorPaletteViewOutput,
 } from '../types'
 import { findNearestCentroid, kMeans, deltaE00Distance } from './clustering'
-import { trimNumber } from '../helpers'
+import { trimNumber, scaleCanvasHeightToColors } from '../helpers'
+import { createCanvasWrapper, drawColorsOnCanvas } from "../patterns/sketch-helpers";
 
 const CIE10D65_DAYLIGHT = [94.811, 100, 107.304]
 
@@ -409,4 +411,58 @@ export function createColorPalette({ colors, colorPaletteSize, colorMode }: Colo
 
   // All outputted color arrays are sorted by frequency
   return { colorPalette: sortedCentroids, colorClusters: sortedClusters }
+}
+
+/**
+ * Cluster and draw colors with color palette swatches from a color list
+ */
+export function drawColorPalette(
+  palette: ColorPaletteOutput,
+  paletteCanvas: HTMLCanvasElement,
+  colorsCanvas: HTMLCanvasElement
+): ColorPaletteViewOutput {
+  const { colors: sortedColors } = flattenColors({ clusters: palette.colorClusters, sortColors: false })
+
+  const paletteSize = palette.colorPalette.length
+  const width = DEFAULT_CANVAS_WIDTH - (DEFAULT_CANVAS_WIDTH % paletteSize)
+
+  const paletteScale = width / paletteSize
+  const paletteHeight = scaleCanvasHeightToColors(paletteSize, paletteScale, width)
+  paletteCanvas.width = width
+  paletteCanvas.height = paletteHeight
+
+  drawColorsOnCanvas({
+    colors: palette.colorPalette,
+    ctx: paletteCanvas.getContext('2d'),
+    patternWidth: width,
+    patternHeight: paletteHeight,
+    scale: paletteScale,
+  })
+
+  const colorsScale = 2
+  const colorsHeight = scaleCanvasHeightToColors(sortedColors.length, colorsScale, width)
+  colorsCanvas.width = width
+  colorsCanvas.height = colorsHeight
+
+  drawColorsOnCanvas({
+    colors: sortedColors,
+    ctx: colorsCanvas.getContext('2d'),
+    patternWidth: width,
+    patternHeight: colorsHeight,
+    scale: colorsScale,
+  })
+
+  return { palette, paletteCanvas, colorsCanvas }
+}
+
+export function viewColorPalette(paletteCanvas: HTMLCanvasElement, colorsCanvas: HTMLCanvasElement) {
+  const wrapper = createCanvasWrapper(
+    'image-color-palette',
+    true,
+    `Source image palette`
+  )
+
+  // TODO: Display block these!
+  wrapper.appendChild(paletteCanvas)
+  wrapper.appendChild(colorsCanvas)
 }

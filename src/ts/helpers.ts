@@ -1,5 +1,5 @@
 import * as p5 from 'p5';
-import { Color, ColorList, NoisePatternSetting } from './types';
+import { Color, NoisePatternSetting } from './types';
 import { DEFAULT_RESOLUTION, FLOAT_SETTINGS } from './constants';
 
 export const parseIntOrFloat = (setting: NoisePatternSetting, value: string) => FLOAT_SETTINGS.includes(setting) ? parseFloat(value) : parseInt(value, 10)

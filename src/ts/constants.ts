@@ -1,7 +1,7 @@
 import { NoisePatternSetting, NoisePatternConfig } from './types';
 
 export const DEFAULT_CANVAS_HEIGHT = 700
-export const DEFAULT_CANVAS_WIDTH = 1000
+export const DEFAULT_CANVAS_WIDTH = 800
 export const PALETTE_SCALE = 4
 
 /**

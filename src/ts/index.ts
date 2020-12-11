@@ -17,9 +17,7 @@ window.addEventListener('load', () => {
 
       // Disable interactive buttons while creating the pattern(s)
       const disabledButtons = enableOrDisableButtons({ disable: true })
-      // Grab all the form elements
       const formElements = (e.target as HTMLFormElement).elements;
-      // Add loading animation to submit button
       const submitButton = formElements.namedItem(CreatePatternElements.SubmitButton) as HTMLButtonElement
       const endLoadingAnimation = beginLoadingAnimation(submitButton)
 
@@ -53,7 +51,6 @@ window.addEventListener('load', () => {
 
         // Re-enable any buttons after pattern generation is complete
         enableOrDisableButtons({ buttons: disabledButtons, disable: false })
-        // End loading animation
         endLoadingAnimation()
       } catch (error) {
         console.error(`Error generating patterns from uploaded image: ${error && error.message}`, error)
@@ -109,7 +106,7 @@ async function generatePatterns({
   // }
 
   state.source.getColorPalette(colorPaletteSize)
-  state.source.viewColorPalette(colorPaletteSize)
+  state.source.drawColorPalette(colorPaletteSize)
 
   console.log('**** Finished color palette in main thread ****')
 

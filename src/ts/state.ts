@@ -1,6 +1,5 @@
 import { VoronoiVertex } from "voronoi/*";
-import { createColorPalette } from "./colors/palette";
-import { viewColorPalette } from "./colors/visualize";
+import { createColorPalette, drawColorPalette, viewColorPalette } from "./colors/palette";
 import { config, DEFAULT_VORONOI_SITES } from "./constants";
 import { createNoisePatternEditForm, EditNoiseControls, EditShapeControls, createShapePatternEditForms } from "./forms";
 import { pixelsToInches } from "./helpers";
@@ -48,9 +47,10 @@ export class PatternState {
   }
 }
 
-// TODO: Add a loading state for when palettes are being generated
 export class SourceImage {
   private palettes: { [key: string]: ColorPaletteState } = {}
+  private paletteCanvas: HTMLCanvasElement = null
+  private colorsCanvas: HTMLCanvasElement = null
 
   constructor(private rawColorData: ColorList, private mode: ColorMode) {}
 
@@ -66,6 +66,15 @@ export class SourceImage {
   private setPalette(palette: ColorPaletteOutput, seed?: number) {
     const key = this.paletteKey(palette.colorPalette.length, seed)
     this.palettes[key] = palette
+  }
+
+  private renderPaletteCanvases() {
+    viewColorPalette(this.paletteCanvas, this.colorsCanvas)
+  }
+
+  private clearCanvases() {
+    clearCanvas(this.paletteCanvas)
+    clearCanvas(this.colorsCanvas)
   }
 
   public get colorMode() {
@@ -100,10 +109,24 @@ export class SourceImage {
     return palette
   }
 
-  public viewColorPalette(size: number, seed?: number) {
+  public drawColorPalette(size: number, seed?: number) {
     const palette = this.getColorPalette(size, seed)
 
-    return viewColorPalette(palette)
+    if (this.paletteCanvas && this.colorsCanvas) {
+      this.clearCanvases
+    }
+
+    const { paletteCanvas, colorsCanvas } = drawColorPalette(
+      palette,
+      this.paletteCanvas || document.createElement('canvas'),
+      this.colorsCanvas || document.createElement('canvas')
+    )
+
+    if (!this.paletteCanvas && !this.colorsCanvas) {
+      this.paletteCanvas = paletteCanvas
+      this.colorsCanvas = colorsCanvas
+      this.renderPaletteCanvases()
+    }
   }
 }
 
@@ -111,7 +134,6 @@ export class ShapeDisruptivePattern {
   private canvas: HTMLCanvasElement = null
   private colorPairings: [Color, Color][] = null
   private sites: VoronoiVertex[] = null
-  private editForm: HTMLElement = null
 
   constructor(
     private sourceImage: SourceImage,
@@ -161,6 +183,9 @@ export class ShapeDisruptivePattern {
       this.canvas = canvas
       this.renderNewCanvas()
     }
+
+    // Visualize the new palette
+    this.sourceImage.drawColorPalette(this.colorPaletteSize)
   }
 
   public regeneratePalette(size: number) {
@@ -193,9 +218,6 @@ export class ShapeDisruptivePattern {
 
     this.generate(this.numSites, {})
   }
-
-  // TODO
-  public save() {}
 
   public createEditForm() {
     const defaultValues = {
@@ -270,6 +292,9 @@ export class NoisePattern {
       this.canvas = canvas
       this.renderNewCanvas()
     }
+
+    // Visualize the new palette
+    this.sourceImage.drawColorPalette(this.colorPaletteSize)
   }
 
   public regeneratePalette(size: number) {
@@ -306,9 +331,6 @@ export class NoisePattern {
 
     this.generate({})
   }
-
-  // TODO
-  public save() {}
 
   public createEditForm() {
     const defaultValues = {

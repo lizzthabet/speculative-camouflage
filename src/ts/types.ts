@@ -84,8 +84,10 @@ export interface ColorPaletteOutput {
   colorClusters: Cluster;
 }
 
-export interface ColorPaletteViewOutput extends ColorPaletteOutput {
-  p5Instance: p5;
+export interface ColorPaletteViewOutput {
+  palette: ColorPaletteOutput;
+  paletteCanvas: HTMLCanvasElement;
+  colorsCanvas: HTMLCanvasElement;
 }
 
 export interface ColorPaletteState {
