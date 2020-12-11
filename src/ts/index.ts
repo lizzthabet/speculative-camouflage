@@ -83,7 +83,7 @@ async function generatePatterns({
   const sourceImage = new SourceImage(colors, colorMode)
   state.source = sourceImage
 
-  console.log(`Uploaded image has ${colors.length} colors`)
+  console.log(`Uploaded source image has ${colors.length} colors`)
 
   /**
    * Color palette extraction
@@ -108,7 +108,7 @@ async function generatePatterns({
   state.source.getColorPalette(colorPaletteSize)
   state.source.drawColorPalette(colorPaletteSize)
 
-  console.log('**** Finished color palette in main thread ****')
+  console.log('**** Finished source image color palette generation in main thread ****')
 
   if (patterns[Pattern.NOISE]) {
     state.noisePattern = new NoisePattern(

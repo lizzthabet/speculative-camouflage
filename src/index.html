@@ -11,11 +11,26 @@
   <link rel="stylesheet" type="text/css" href="styles.css">
   <body>
     <h1>Speculative camouflage generator</h1>
-    <h2><em>A prototype for a wearable pattern generator that builds camouflage-inspired designs</em></h2>
+    <h2><em>What is it like to build and wear a metaphor?</em></h2>
     <p>
-       Right now, this tool only generates a single design: a pixelated fractal noise pattern (generally called a multiscale pattern), using the colors from an uploaded image. In the future, it may expand to generate shape-disruptive patterns, too. The design for the noise pattern is loosely based on <a href="https://www.academia.edu/21209710/Urban_camouflage_assessment_through_visual_search_and_computational_saliency" target="_blank">a scientific paper published in 2013</a>. This tool's purpose is to generate large images of patterns that can be used for textiles, clothing, and other surfaces.
-       <img src="img/subway-example.png" />
+      This tool can be used to create large patterns for wearables based on photographs of specific environments. It generates several designs that use multiscale and shape-disruptive camouflage techniques loosely based on <a href="https://www.academia.edu/21209710/Urban_camouflage_assessment_through_visual_search_and_computational_saliency" target="_blank">a scientific paper published in 2013</a>. Multiscale patterns employ details at various spatial scales to disguise the wearer, while disruptive patterns aim to distort and interrupt the wearer’s outline using blocks of shapes.
     </p>
+    <p>
+      This tool’s patterns are rooted in the “real,” “historical,” and “scientific” but abandon science to speculate about how (and if?) camouflage can be used as a personal tool for bodied agency. It’s a part of a magical, material, and metaphorical costume that I’m building for myself, as a queer, femme body that lives and moves within a large city. I imagine camouflage as a conceptual and literal technology to hide, obscure, and misrecognize my body in public and corporate space.
+      <img src="img/subway-example.png" alt="A screenshot of a fractal noise pattern next to a photograph of the inside of a subway train that was used to generate the pattern"/>
+    </p>
+    <p>
+      <h3>How to use the speculative camouflage generator:</h3>
+      <ol>
+        <li>Upload an image of a place</li>
+        <li>Generate your patterns</li>
+        <li>Tweak their settings and regenerate</li>
+        <li>Save the images with their final size</li>
+        <li>Send the patterns to your favorite print-on-demand fabric site</li>
+        <li>Fuck with <a href="https://github.com/lizzthabet/camo-processing" target="_blank">the source code</a> and make your own tool</li>
+      </ol>
+    </p>
+    <hr />
     <form id="create-pattern-form" autocomplete="off" aria-labelledby="create-pattern-heading">
       <h2 id="create-pattern-heading">Generate a pattern</h2>
 

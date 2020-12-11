@@ -329,9 +329,6 @@ const extractPixelData = (image: HTMLImageElement) => {
   canvas.width = UPLOAD_SCALE_WIDTH
   canvas.height = aspectRatio * UPLOAD_SCALE_WIDTH
 
-  console.log(`Original image dimensions: ${image.height} x ${image.width}`)
-  console.log(`Canvas dimensions: ${canvas.height} x ${canvas.width}`)
-
   // Draw the image and pull the pixel data
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
   const pixelData: Uint8ClampedArray = ctx.getImageData(0, 0, canvas.width, canvas.height).data

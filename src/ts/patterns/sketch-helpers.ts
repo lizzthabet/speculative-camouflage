@@ -166,6 +166,7 @@ export function createSaveButtonForSketch({ p5Instance, canvas, filename }: {
     button = createButton({
       id: `save-pattern-${filename.toLowerCase()}`,
       htmlElement: 'button',
+      buttonClassName: 'save-button',
       type: 'button',
       text: 'Save pattern',
       clickListener: () => p5Instance.saveCanvas(filename, 'png'),
@@ -174,6 +175,7 @@ export function createSaveButtonForSketch({ p5Instance, canvas, filename }: {
     button = createButton({
       id: `save-pattern-${filename.toLowerCase()}`,
       htmlElement: 'button',
+      buttonClassName: 'save-button',
       type: 'button',
       text: '',
     }).button
@@ -204,6 +206,7 @@ export function drawColorsOnCanvas({
   scale: number;
 }) {
   let i = 0
+  let missingColorsCount = 0
   for (let y = 0; y < patternHeight; y += scale) {
     for (let x = 0; x < patternWidth; x += scale) {
       if (colors[i]) {
@@ -212,9 +215,13 @@ export function drawColorsOnCanvas({
         ctx.fillRect(x, y, scale, scale)
         i++
       } else {
-        console.warn('Colors array length does not align with pattern dimensions; rendering may be skewed.')
+        missingColorsCount++
       }
     }
+  }
+
+  if (missingColorsCount > 0) {
+    console.warn(`Colors array length does not align with pattern dimensions; it is missing ${missingColorsCount} colors, which may result in skewed rendering. (This warning can be ignored when drawing a color palette.)`)
   }
 
   return ctx

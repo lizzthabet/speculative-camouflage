@@ -1,7 +1,12 @@
 import { VoronoiVertex } from "voronoi/*";
 import { createColorPalette, drawColorPalette, viewColorPalette } from "./colors/palette";
 import { config, DEFAULT_VORONOI_SITES } from "./constants";
-import { createNoisePatternEditForm, EditNoiseControls, EditShapeControls, createShapePatternEditForms } from "./forms";
+import {
+  createNoisePatternEditForm,
+  EditNoiseControls,
+  EditShapeControls,
+  createShapePatternEditForms
+} from "./forms";
 import { pixelsToInches } from "./helpers";
 import { generateNoisePattern, viewNoisePattern, generateNoiseSourcePattern } from "./patterns/noise-pattern";
 import { clearCanvas, generateShapeDisruptivePattern, viewShapeDisruptivePattern } from "./patterns/shape-pattern";
@@ -51,6 +56,7 @@ export class SourceImage {
   private palettes: { [key: string]: ColorPaletteState } = {}
   private paletteCanvas: HTMLCanvasElement = null
   private colorsCanvas: HTMLCanvasElement = null
+  private lastVisualizedPalette: string = null
 
   constructor(private rawColorData: ColorList, private mode: ColorMode) {}
 
@@ -103,17 +109,21 @@ export class SourceImage {
       colorMode: this.colorMode
     })
 
-    // TODO: Visualize the new color palette!
     this.setPalette(palette, seed)
 
     return palette
   }
 
   public drawColorPalette(size: number, seed?: number) {
+    const paletteKey = this.paletteKey(size, seed)
+    if (this.lastVisualizedPalette === paletteKey) {
+      return
+    }
+
     const palette = this.getColorPalette(size, seed)
 
     if (this.paletteCanvas && this.colorsCanvas) {
-      this.clearCanvases
+      this.clearCanvases()
     }
 
     const { paletteCanvas, colorsCanvas } = drawColorPalette(
@@ -127,6 +137,8 @@ export class SourceImage {
       this.colorsCanvas = colorsCanvas
       this.renderPaletteCanvases()
     }
+
+    this.lastVisualizedPalette = paletteKey
   }
 }
 
@@ -306,9 +318,18 @@ export class NoisePattern {
     this.generate({})
   }
 
-  // TODO: This method will need to handle regenerating the noise source data and it should add dimensions to color palette keys
+  // Note: The noise source color palette is not regenerated with a size change;
+  // this may be functionality to add in the future, where palettes are also key'd by size
   public setDimensions(size: { width: number; height: number; }) {
     this.patternSize = size
+
+    // Generate new source color data for the noise pattern
+    this.noiseSourceImage.colorData = generateNoiseSourcePattern(
+      this.patternSize.width,
+      this.patternSize.height,
+      this.noiseSeed,
+      this.noiseSeed
+    )
 
     this.generate({})
   }
