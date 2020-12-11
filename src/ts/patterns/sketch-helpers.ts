@@ -181,7 +181,7 @@ export function createSaveButtonForSketch({ p5Instance, canvas, filename }: {
     const downloadLink: HTMLAnchorElement = document.createElement('a')
     downloadLink.download = filename
     downloadLink.href = canvas.toDataURL()
-    downloadLink.textContent = 'Save pattern'
+    downloadLink.innerText = 'Save pattern'
     button.prepend(downloadLink)
   } else {
     throw new Error("Supply a p5 instance or HTML canvas to create a save button.")

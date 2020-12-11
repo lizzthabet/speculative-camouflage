@@ -16,7 +16,6 @@
        Right now, this tool only generates a single design: a pixelated fractal noise pattern (generally called a multiscale pattern), using the colors from an uploaded image. In the future, it may expand to generate shape-disruptive patterns, too. The design for the noise pattern is loosely based on <a href="https://www.academia.edu/21209710/Urban_camouflage_assessment_through_visual_search_and_computational_saliency" target="_blank">a scientific paper published in 2013</a>. This tool's purpose is to generate large images of patterns that can be used for textiles, clothing, and other surfaces.
        <img src="img/subway-example.png" />
     </p>
-    <p>When a pattern is successfully generated, you can double-click on any canvas to save the outputted images.</p>
     <form id="create-pattern-form" autocomplete="off" aria-labelledby="create-pattern-heading">
       <h2 id="create-pattern-heading">Generate a pattern</h2>
 
@@ -52,8 +51,8 @@
         </label>
       </fieldset>
 
-      <button id="create-pattern-submit" type="submit">Generate*</button>
-      <p>*Note: this may take a couple minutes! Debugging logs are available in the console.</p>
+      <button id="create-pattern-submit" type="submit">Generate</button>
+      <p>*Note: pattern generation may take a couple minutes. Debugging logs are available in the console.</p>
     </form>
 
     <script type="text/javascript" src="bundle.js"></script>

@@ -128,7 +128,7 @@ function createFieldset(config: FormFieldsetConfig, defaultValues?: { [key: stri
 export function createButton(config: ButtonConfig) {
   const button: HTMLButtonElement = document.createElement(BUTTON)
   button.id = config.id
-  button.textContent = config.text
+  button.innerText = config.text
   button.type = config.type
 
   if (config.buttonClassName) {
@@ -149,7 +149,8 @@ export function createButton(config: ButtonConfig) {
 
 export function createForm(
   formConfig: FormConfig,
-  submitListener: (e: Event) => void,
+  submitListener: (e: Event) => any,
+  addLoadingState: boolean,
   defaultValues?: { [key: string]: string }
 ) {
   const form: HTMLFormElement = document.createElement(FORM)
@@ -189,10 +190,60 @@ export function createForm(
   })
 
   if (submitListener) {
-    form.addEventListener('submit', submitListener)
+    const submitCallback = !addLoadingState ? submitListener : (e: Event) => {
+      e.preventDefault()
+      const elements = (e.target as HTMLFormElement).elements
+      let submitButton: HTMLButtonElement;
+      for (let i = 0; i < elements.length; i++) {
+        const element = elements.item(i)
+        if (element.nodeName.toLowerCase() === BUTTON) {
+          if ((element as HTMLButtonElement).type.toLowerCase() === SUBMIT) {
+            submitButton = element as HTMLButtonElement
+            break
+          }
+        }
+      }
+
+      const stopLoadingAnimation = beginLoadingAnimation(submitButton)
+      const disabledButtons = enableOrDisableButtons({ disable: true })
+      // Workaround to make sure that DOM changes are rendered before potentially costly calculations on form submit
+      setTimeout(() => {
+        submitListener(e)
+        stopLoadingAnimation()
+        enableOrDisableButtons({ buttons: disabledButtons, disable: false })
+      })
+    }
+    form.addEventListener('submit', submitCallback)
   }
 
   return { form }
+}
+
+// This could be moved to another file depending on final code organization
+export function enableOrDisableButtons({ buttons, disable }: { buttons?: HTMLCollectionOf<HTMLButtonElement>, disable: boolean }) {
+  const buttonsToUpdate = buttons ? buttons : document.getElementsByTagName('button')
+
+  for (let i = 0; i < buttonsToUpdate.length; i++) {
+    buttonsToUpdate.item(i).disabled = !!disable
+  }
+
+  return buttonsToUpdate
+}
+
+export function beginLoadingAnimation(button: HTMLButtonElement) {
+  if (!button) {
+    return () => {}
+  }
+
+  const originalContent = button.innerHTML
+
+  button.disabled = true
+  button.innerHTML = `Loading<span class="loading-ellipse1">.</span><span class="loading-ellipse2">.</span><span class="loading-ellipse3">.</span>`
+
+  return () => {
+    button.innerHTML = originalContent
+    button.disabled = false
+  }
 }
 
 // Common form elements shared between multiple forms
@@ -439,26 +490,26 @@ export function createShapePatternEditForms(
   const { form: regenerateColorsForm } = createForm(EDIT_SHAPE_COLORS_FORM, (e) => {
     e.preventDefault()
     pattern.regenerateColors()
-  }, defaultValues)
+  }, false, defaultValues)
 
   const { form: regenerateSitesForm } = createForm(EDIT_SHAPE_SHAPES_FORM, (e) => {
     e.preventDefault()
     pattern.regenerateSites()
-  }, defaultValues)
+  }, false, defaultValues)
 
   const { form: paletteSizeForm } = createForm(EDIT_SHAPE_PALETTE_SIZE_FORM, (e) => {
     e.preventDefault()
     const formElements = (e.target as HTMLFormElement).elements
     const paletteSizeInput = formElements.namedItem(EditShapeControls.PaletteSize) as HTMLInputElement
     pattern.regeneratePalette(parseInt(paletteSizeInput.value))
-  }, defaultValues)
+  }, true, defaultValues)
 
   const { form: numShapesForm } = createForm(EDIT_SHAPE_NUM_SHAPES_FORM, (e) => {
     e.preventDefault()
     const formElements = (e.target as HTMLFormElement).elements
     const numShapesInput = formElements.namedItem(EditShapeControls.NumShapes) as HTMLInputElement
     pattern.setSites(parseInt(numShapesInput.value))
-  }, defaultValues)
+  }, false, defaultValues)
 
   const { form: patternSizeForm } = createForm(EDIT_SHAPE_PATTERN_SIZE_FORM, (e) => {
     e.preventDefault()
@@ -469,7 +520,7 @@ export function createShapePatternEditForms(
       width: inchesToPixels(parseInt(widthInput.value)),
       height: inchesToPixels(parseInt(heightInput.value))
     })
-  }, defaultValues)
+  }, false, defaultValues)
 
   wrapper.appendChild(regenerateColorsForm)
   wrapper.appendChild(regenerateSitesForm)
@@ -494,14 +545,14 @@ export function createNoisePatternEditForm (
     const formElements = (e.target as HTMLFormElement).elements
     const paletteSizeInput = formElements.namedItem(EditNoiseControls.PaletteSize) as HTMLInputElement
     pattern.regeneratePalette(parseInt(paletteSizeInput.value))
-  }, defaultValues)
+  }, true, defaultValues)
 
   const { form: noiseSeedForm } = createForm(EDIT_NOISE_SEED_FORM, (e) => {
     e.preventDefault()
     const formElements = (e.target as HTMLFormElement).elements
     const seedInput = formElements.namedItem(EditNoiseControls.Seed) as HTMLInputElement
     pattern.setNoiseSeed(parseInt(seedInput.value))
-  }, defaultValues)
+  }, true, defaultValues)
 
   const { form: patternSizeForm } = createForm(EDIT_NOISE_PATTERN_SIZE_FORM, (e) => {
     e.preventDefault()
@@ -512,7 +563,7 @@ export function createNoisePatternEditForm (
       width: inchesToPixels(parseInt(widthInput.value)),
       height: inchesToPixels(parseInt(heightInput.value))
     })
-  }, defaultValues)
+  }, true, defaultValues)
 
   wrapper.appendChild(noiseSeedForm)
   wrapper.appendChild(paletteSizeForm)

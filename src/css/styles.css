@@ -117,3 +117,44 @@ button a {
   white-space: nowrap; 
   width: 1px;
 }
+
+.loading-ellipse1,
+.loading-ellipse2,
+.loading-ellipse3 {
+  animation: LoadingEllipses;
+  animation-iteration-count: infinite;
+  animation-timing-function: steps(2, jump-both);
+  opacity: 0;
+}
+
+.loading-ellipse1 {
+  animation-delay: 0s;
+  animation-duration: 1s;
+  
+}
+.loading-ellipse2 {
+  animation-delay: 0.1s;
+  animation-duration: 1s;
+}
+.loading-ellipse3 {
+  animation-delay: 0.2s;
+  animation-duration: 1s;
+}
+
+@keyframes LoadingEllipses {
+  0% {
+    opacity: 0;
+  }
+
+  49% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}

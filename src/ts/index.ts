@@ -3,7 +3,7 @@ import { inchesToPixels } from "./helpers";
 import { DEFAULT_VORONOI_SITES } from "./constants";
 import { getColorsFromUploadedImage } from './colors/palette';
 import { NoisePattern, PatternState, ShapeDisruptivePattern, SourceImage } from "./state";
-import { CreatePatternElements, createShapePatternEditForms, createNoisePatternEditForm } from "./forms";
+import { CreatePatternElements, enableOrDisableButtons, beginLoadingAnimation } from "./forms";
 import Worker from 'worker-loader!./workers/clustering.worker';
 
 const state = new PatternState()
@@ -15,8 +15,15 @@ window.addEventListener('load', () => {
     createPatternForm.addEventListener('submit', async (e: Event) => {
       e.preventDefault()
 
+      // Disable interactive buttons while creating the pattern(s)
+      const disabledButtons = enableOrDisableButtons({ disable: true })
+      // Grab all the form elements
+      const formElements = (e.target as HTMLFormElement).elements;
+      // Add loading animation to submit button
+      const submitButton = formElements.namedItem(CreatePatternElements.SubmitButton) as HTMLButtonElement
+      const endLoadingAnimation = beginLoadingAnimation(submitButton)
+
       try {
-        const formElements = (e.target as HTMLFormElement).elements;
         const fileInput = formElements.namedItem(CreatePatternElements.ImageUpload) as HTMLInputElement
         const paletteSizeInput = formElements.namedItem(CreatePatternElements.PaletteSize) as HTMLInputElement
         const heightInput = formElements.namedItem(CreatePatternElements.PatternHeight) as HTMLInputElement
@@ -44,8 +51,16 @@ window.addEventListener('load', () => {
           patternWidth,
         })
 
+        // Re-enable any buttons after pattern generation is complete
+        enableOrDisableButtons({ buttons: disabledButtons, disable: false })
+        // End loading animation
+        endLoadingAnimation()
       } catch (error) {
-        console.error(`Error creating color palette from uploaded image: ${error && error.message}`, error)
+        console.error(`Error generating patterns from uploaded image: ${error && error.message}`, error)
+
+        // Re-enable any disabled buttons and stop loading animation if there's an error
+        enableOrDisableButtons({ disable: false })
+        endLoadingAnimation()
       }
     })
   }
