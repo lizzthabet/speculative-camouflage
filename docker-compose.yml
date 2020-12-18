@@ -1,0 +1,23 @@
+---
+version: "3.5"
+services:
+  tor:
+    image: goldy/tor-hidden-service
+    links:
+      - web
+    environment:
+      WEB_TOR_SERVICE_HOSTS: "80:web:80"
+      WEB_TOR_SERVICE_VERSION: 3
+    volumes:
+      - "./onion/hidden_service:/var/lib/tor/hidden_service"
+    restart: unless-stopped
+
+  web:
+    image: nginx
+    hostname: web
+    ports:
+      - "3001"
+    volumes:
+      - "./nginx.conf:/etc/nginx/conf.d/default.conf"
+      - "./dist:/usr/share/nginx/html"
+    restart: unless-stopped

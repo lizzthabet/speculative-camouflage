@@ -2,12 +2,12 @@
 node_modules/
 package-lock.json
 dist/
+bin/
 nginx-local.conf
 
 # Infra stuff
 .vagrant/
 onion/
-bin/onion.sh
 ubuntu-*
 
 # General stuff
