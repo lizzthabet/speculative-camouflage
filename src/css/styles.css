@@ -110,6 +110,29 @@ button a {
 
 .inline-input + .inline-button {
   margin-left: 2rem;
+  margin-right: 2rem;
+}
+
+@media only screen and (max-width: 500px) {
+  .inline-input + .inline-button {
+    margin-left: unset;
+    margin-right: unset;
+    margin-top: 1rem;
+  }
+}
+
+.form-tip {
+  font-size: 1.2rem;
+  font-style: italic;
+}
+
+.input-with-tip {
+  margin-bottom: 1rem;
+}
+
+.input-with-tip + .form-tip {
+  margin-top: 0;
+  margin-bottom: 2.3rem;
 }
 
 .sr-only {

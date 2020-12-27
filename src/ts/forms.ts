@@ -41,20 +41,22 @@ interface FormInputConfig extends HtmlElementConfig {
   inputMax?: number;
   inputStep?: number;
   labelClassName?: string;
+  tipText?: string;
   type: InputType;
 }
 
 interface FormFieldsetConfig extends HtmlElementConfig {
   fieldsetClassName?: string;
   htmlElement: typeof FIELDSET;
-  options?: FormInputConfig[]
+  options?: FormInputConfig[];
 }
 
 interface ButtonConfig extends HtmlElementConfig {
   buttonClassName?: string;
   htmlElement: typeof BUTTON;
+  tipText?: string;
   type: typeof SUBMIT | typeof BUTTON;
-  clickListener?: (event: Event) => void
+  clickListener?: (event: Event) => void;
 }
 
 // Html creation functions
@@ -71,6 +73,13 @@ function createInput(config: FormInputConfig, defaultValue?: string) {
   input.type = config.type
   if (config.className) {
     input.classList.add(config.className)
+  }
+
+  const tip: HTMLParagraphElement = document.createElement('p')
+  if (config.tipText) {
+    tip.innerText = config.tipText
+    tip.classList.add('form-tip')
+    input.classList.add('input-with-tip')
   }
 
   if (config.type !== InputType.Checkbox) {
@@ -96,7 +105,7 @@ function createInput(config: FormInputConfig, defaultValue?: string) {
     input.value = defaultValue
   }
 
-  return { label, input }
+  return { label, input, tip: config.tipText ? tip : undefined }
 }
 
 function createFieldset(config: FormFieldsetConfig, defaultValues?: { [key: string]: string }) {
@@ -144,7 +153,13 @@ export function createButton(config: ButtonConfig) {
     })
   }
 
-  return { button }
+  const tip: HTMLParagraphElement = document.createElement('p')
+  if (config.tipText) {
+    tip.innerText = config.tipText
+    tip.classList.add('form-tip')
+  }
+
+  return { button, tip: config.tipText ? tip : undefined }
 }
 
 export function createForm(
@@ -174,17 +189,23 @@ export function createForm(
     switch (element.htmlElement) {
       case INPUT:
         const defaultValue = defaultValues && defaultValues[element.id] || undefined
-        const { label, input } = createInput(element as FormInputConfig, defaultValue)
+        const { label, input, tip: inputTip } = createInput(element as FormInputConfig, defaultValue)
         form.appendChild(label)
         form.appendChild(input)
+        if (inputTip) {
+          form.appendChild(inputTip)
+        }
         break
       case FIELDSET:
         const { fieldset } = createFieldset(element as FormFieldsetConfig, defaultValues)
         form.appendChild(fieldset)
         break
       case BUTTON:
-        const { button } = createButton(element)
+        const { button, tip: buttonTip } = createButton(element)
         form.appendChild(button)
+        if (buttonTip) {
+          form.appendChild(buttonTip)
+        }
         break
     }
   })
@@ -393,6 +414,7 @@ const EDIT_NOISE_SEED_FORM: FormConfig = {
     },
     {
       ...REGENERATE_BUTTON,
+      tipText: 'Tip: A seed value is a constant number that\'s used to generate a set of random values. Adjust the seed constant to regenerate the noise pattern.',
       id: `${EditNoiseControls.Seed}-submit`,
     }
   ]
@@ -423,6 +445,7 @@ const EDIT_NOISE_PALETTE_SIZE_FORM: FormConfig = {
     },
     {
       ...REGENERATE_BUTTON,
+      tipText: 'Tip: Larger color palettes will generate a nosie pattern with more depth, while smaller color palettes will flatten it.',
       id: `${EditNoiseControls.PaletteSize}-submit`,
     }
   ]

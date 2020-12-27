@@ -19,8 +19,8 @@
       This tool’s patterns are rooted in the “real,” “historical,” and “scientific” but dismiss efficacy to speculate about how (and if?) camouflage can be used as a personal tool for bodied agency. It’s a part of a magical, material, and metaphorical costume that I’m building for myself, as a queer, femme body that lives and moves within a large city. I imagine camouflage as a conceptual and literal technology to hide, obscure, and misrecognize my body in public and corporate space.
       <img src="img/subway-example.png" alt="A screenshot of a fractal noise pattern next to a photograph of the inside of a subway train that was used to generate the pattern"/>
     </p>
+    <h3>How to use the speculative camouflage generator:</h3>
     <p>
-      <h3>How to use the speculative camouflage generator:</h3>
       <ol>
         <li>Upload an image of a place</li>
         <li>Generate your patterns</li>
@@ -35,7 +35,8 @@
       <h2 id="create-pattern-heading">Generate a pattern</h2>
 
       <label for="source-image">Upload a source image</label>
-      <input type="file" id="source-image" multiple="false" accept="image/*" required />
+      <input class="input-with-tip" type="file" id="source-image" multiple="false" accept="image/*" required />
+      <p class="form-tip">Tip: Use a photograph of a place that avoids large areas of sky or harsh sunlight. For best results, collage together photographs of detail shots from around a specific place into a single image.</p>
 
       <fieldset class="inline-fieldset">
         <legend>Pattern dimensions (inches)</legend>
@@ -52,7 +53,8 @@
       </fieldset>
 
       <label for="color-palette-size">Color palette size</label>
-      <input type="number" id="color-palette-size" min="2" max="32" step="1" value="8" required />
+      <input class="input-with-tip" type="number" id="color-palette-size" min="2" max="32" step="1" value="8" required />
+      <p class="form-tip">Tip: Best results will have color palettes between 6-15 colors. It may take several attempts to generate, depending on your source image.</p>
 
       <fieldset>
         <legend>Choose patterns</legend>
@@ -67,8 +69,9 @@
       </fieldset>
 
       <button id="create-pattern-submit" type="submit">Generate</button>
-      <p>*Note: pattern generation may take a couple minutes. Debugging logs are available in the console.</p>
+      <p class="form-tip">Tip: Pattern generation may take a couple minutes. Debugging logs are available in the console.</p>
     </form>
+    <p>Built by <a href="http://www.lizzthabet.com/">Lizz Thabet</a>. View the <a href="https://github.com/lizzthabet/camo-processing" target="_blank">source code</a>.</p>
 
     <script type="text/javascript" src="bundle.js"></script>
   </body>
