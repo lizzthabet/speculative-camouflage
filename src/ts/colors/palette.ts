@@ -1,4 +1,4 @@
-import { BRI_SCALE, HUE_SCALE, SAT_SCALE, UPLOAD_SCALE_WIDTH, DEFAULT_CANVAS_WIDTH } from '../constants'
+import { BRI_SCALE, HUE_SCALE, SAT_SCALE, UPLOAD_SCALE_WIDTH, DEFAULT_CANVAS_WIDTH, NOT_RGB_SOURCE_ERROR } from '../constants'
 import {
   RgbaColor,
   Color,
@@ -356,17 +356,11 @@ export const getColorsFromUploadedImage = async (
 
     let colorData: RgbaColor[]
 
-    /**
-     * TODO: Change the color return type, so each color has multiple spaces
-     * Loop through the color palette to create a color map
-     * { rgb: value, lab: value, hsl: value }
-     */
-
     // TODO: Add support for other color modes
     if (sourceColor === ColorMode.RGB) {
       colorData = extractPixelData(image)
     } else {
-      throw new Error(`Source image must be in RGB color mode, not ${sourceColor}.`)
+      throw new Error(NOT_RGB_SOURCE_ERROR(sourceColor))
     }
 
     if (destinationColor === ColorMode.HSB) {

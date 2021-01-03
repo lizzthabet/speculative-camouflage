@@ -1,7 +1,7 @@
 import { isEqual } from "lodash";
 import { Color, Cluster, ColorList, NearestCentroid, DistanceCalculation } from "../types";
 import { randomInt } from "../helpers";
-import { ITERATION_LIMIT } from "../constants";
+import { ITERATION_LIMIT_ERROR, K_TOO_LARGE_ERROR, ITERATION_LIMIT } from "../constants";
 
 // Clustering techniques adapted from Xander Lewis
 // https://towardsdatascience.com/extracting-colours-from-an-image-using-k-means-clustering-9616348712be
@@ -195,7 +195,7 @@ const getNewCentroids = (clusters: Cluster) => {
 
 export const kMeans = (data: ColorList, k: number, distance: DistanceCalculation): { clusters: Cluster, centroids: ColorList } => {
   if (k > data.length) {
-    throw new Error('Cannot divide data list into `k` groups because `k` exceeds data length. Provide a smaller `k` value.')
+    throw new Error(K_TOO_LARGE_ERROR(k))
   }
 
   let previousCentroids: ColorList = []
@@ -211,7 +211,7 @@ export const kMeans = (data: ColorList, k: number, distance: DistanceCalculation
   }
 
   if (iterations >= ITERATION_LIMIT) {
-    throw new Error(`Unable to cluster colors into ${k}'k' groups within set iteration limit. If colors in the image are too similar, try running again with a lower 'k' value. If there is a lot of color variation in the image, try running with a higher 'k' value.`)
+    throw new Error(ITERATION_LIMIT_ERROR(k))
   }
 
   console.log(`Ran clustering with ${iterations} iterations`)

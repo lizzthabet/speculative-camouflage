@@ -1,6 +1,6 @@
 import * as p5 from "p5";
 import { ColorList, Color, ColorMode } from "../types";
-import { config, PALETTE_SCALE } from "../constants";
+import { config, PALETTE_SCALE, SAVE_BUTTON_ERROR } from "../constants";
 import { euclideanDistance, findNearestCentroid } from "../colors/clustering";
 import { createButton } from "../forms";
 import { colorToRgbString, scaleCanvasHeightToColors } from "../helpers";
@@ -186,7 +186,7 @@ export function createSaveButtonForSketch({ p5Instance, canvas, filename }: {
     downloadLink.innerText = 'Save pattern'
     button.prepend(downloadLink)
   } else {
-    throw new Error("Supply a p5 instance or HTML canvas to create a save button.")
+    throw new Error(SAVE_BUTTON_ERROR)
   }
 
   return button

@@ -1,3 +1,4 @@
+import { TOR_PERMISSIONS_ERROR } from "./constants";
 import { inchesToPixels } from "./helpers";
 import { NoisePattern, ShapeDisruptivePattern } from "./state";
 
@@ -267,6 +268,30 @@ export function beginLoadingAnimation(button: HTMLButtonElement) {
   }
 }
 
+export function showFormError(errorElement: HTMLParagraphElement, errorText: string) {
+  if (errorText) {
+    errorElement.innerHTML = `<b>Unexpected error:</b> ${errorText}`
+  }
+
+  errorElement.classList.add('form-error__visible')
+
+  return errorElement
+}
+
+export function hideFormError(errorElement: HTMLParagraphElement) {
+  errorElement.innerHTML = ''
+  errorElement.classList.remove('form-error__visible')
+
+  return errorElement
+}
+
+// App errors mapped to visible error messages
+export const ErrorsToVisibleMessages: {
+  [key: string]: string
+} = {
+  [TOR_PERMISSIONS_ERROR]: 'Are you using Tor browser? To generate the patterns, you have to allow canvas data access for this site. Click on the icon in the URL bar to the immediate left of the website address and allow "Extract Canvas Data" permissions. You may need to reload the page. (Curious why this security setting exists in Tor browser? <a href="https://2019.www.torproject.org/projects/torbrowser/design/#fingerprinting-linkability" target="_blank">Learn more.</a>)',
+}
+
 // Common form elements shared between multiple forms
 const REGENERATE_BUTTON: ButtonConfig = {
   id: 'override-me',
@@ -329,7 +354,8 @@ export enum CreatePatternElements {
   PatternHeight = 'pattern-height',
   PatternType = 'pattern-type',
   PatternWidth = 'pattern-width',
-  SubmitButton = 'create-pattern-submit'
+  SubmitButton = 'create-pattern-submit',
+  Error = 'create-pattern-form-error',
 }
 
 // Unique ids attached to each form element

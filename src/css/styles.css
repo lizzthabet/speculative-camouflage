@@ -135,6 +135,21 @@ button a {
   margin-bottom: 2.3rem;
 }
 
+.form-error {
+  border: 1px solid #333;
+  display: none;
+  font-size: 1.2rem;
+  padding: 1rem;
+}
+
+.form-error__visible {
+  display: block;
+}
+
+.form-error-bold {
+  font-weight: bold;
+}
+
 .sr-only {
   clip: rect(0 0 0 0); 
   clip-path: inset(50%);

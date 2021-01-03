@@ -1,5 +1,5 @@
 import * as p5 from 'p5';
-import { Color, NoisePatternSetting } from './types';
+import { Color, NoisePatternSetting, ColorList } from './types';
 import { DEFAULT_RESOLUTION, FLOAT_SETTINGS } from './constants';
 
 export const parseIntOrFloat = (setting: NoisePatternSetting, value: string) => FLOAT_SETTINGS.includes(setting) ? parseFloat(value) : parseInt(value, 10)
@@ -42,3 +42,23 @@ export const inchesToPixels = (measurementInInches: number, resolution = DEFAULT
 export const pixelsToInches = (measurementInPixels: number, resolution = DEFAULT_RESOLUTION) => measurementInPixels / resolution
 
 export const colorToRgbString = ([r, g, b]: Color) => `rgb(${r}, ${g}, ${b})`
+
+export const isTorBrowser = (location: Location) => location && location.hostname.match(/onion/)
+
+export const countUniqueColorsTillThreshhold = (colors: ColorList, countThreshhold: number) => {
+  const colorCount = new Set()
+  for (let i = 0; i < colors.length; i++) {
+    const color = colors[i].join()
+    // Add color to count if it is new
+    if (!colorCount.has(color)) {
+      colorCount.add(color)
+    }
+
+    // Stop counting if threshhold is met
+    if (colorCount.size >= countThreshhold) {
+      return true
+    }
+  }
+
+  return false
+}

@@ -1,19 +1,36 @@
 import { ColorMode, CreatePatternsInput, Pattern } from "./types";
-import { inchesToPixels } from "./helpers";
-import { DEFAULT_VORONOI_SITES } from "./constants";
+import { countUniqueColorsTillThreshhold, inchesToPixels, isTorBrowser } from "./helpers";
+import { COLOR_COUNT_CUTOFF, DEFAULT_VORONOI_SITES, TOR_PERMISSIONS_ERROR } from "./constants";
 import { getColorsFromUploadedImage } from './colors/palette';
 import { NoisePattern, PatternState, ShapeDisruptivePattern, SourceImage } from "./state";
-import { CreatePatternElements, enableOrDisableButtons, beginLoadingAnimation } from "./forms";
+import {
+  CreatePatternElements,
+  enableOrDisableButtons,
+  beginLoadingAnimation,
+  hideFormError,
+  showFormError,
+  ErrorsToVisibleMessages,
+} from "./forms";
 import Worker from 'worker-loader!./workers/clustering.worker';
 
 const state = new PatternState()
 
 window.addEventListener('load', () => {
   const createPatternForm = document.getElementById(CreatePatternElements.Form)
+  const createPatternFormError = document.getElementById(CreatePatternElements.Error) as HTMLParagraphElement
 
   if (createPatternForm) {
+    createPatternForm.addEventListener('change', () => {
+      if (createPatternFormError.classList.contains('form-error__visible')) {
+        hideFormError(createPatternFormError)
+      }
+    })
+
     createPatternForm.addEventListener('submit', async (e: Event) => {
       e.preventDefault()
+
+      // Clear the form error state
+      hideFormError(createPatternFormError)
 
       // Disable interactive buttons while creating the pattern(s)
       const disabledButtons = enableOrDisableButtons({ disable: true })
@@ -53,11 +70,19 @@ window.addEventListener('load', () => {
         enableOrDisableButtons({ buttons: disabledButtons, disable: false })
         endLoadingAnimation()
       } catch (error) {
-        console.error(`Error generating patterns from uploaded image: ${error && error.message}`, error)
+        console.error(`Error generating patterns from uploaded image:`, error)
 
         // Re-enable any disabled buttons and stop loading animation if there's an error
         enableOrDisableButtons({ disable: false })
         endLoadingAnimation()
+
+        // Display the error message
+        if (error.message) {
+          const errorString = String(error.message)
+          const visibleMessage = ErrorsToVisibleMessages.hasOwnProperty(errorString) ? ErrorsToVisibleMessages[errorString] : errorString
+          showFormError(createPatternFormError, visibleMessage)
+        }
+
       }
     })
   }
@@ -77,6 +102,24 @@ async function generatePatterns({
     sourceColor: ColorMode.RGB,
     destinationColor: colorMode,
   })
+
+  /**
+   * Tor browser permissions check:
+   *    If the client doesn't give the site permission to access HTML canvas data,
+   *    the color data won't be available. Based on local testing, Tor browser supplies
+   *    fake color data that's an array of eight repeating colors.
+   *
+   *    Since no API is available for detecting what permissions are enabled, this
+   *    check counts all the unique colors in an image and throws an error if a
+   *    threshhold isn't met.
+   */
+  if (isTorBrowser(window.location)) {
+    const colorThreshholdMet = countUniqueColorsTillThreshhold(colors, COLOR_COUNT_CUTOFF)
+
+    if (!colorThreshholdMet) {
+      throw new Error(TOR_PERMISSIONS_ERROR)
+    }
+  }
 
   // TODO: Handle multiple images being uploaded by clearing the DOM of previous content
   // Add the source image to the state
