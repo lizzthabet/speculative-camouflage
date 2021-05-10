@@ -14,7 +14,7 @@
   "author": "lizzthabet",
   "license": "MIT",
   "dependencies": {
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "p5": "^0.8.0",
     "voronoi": "^1.0.0"
   },
