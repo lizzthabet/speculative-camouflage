@@ -10,6 +10,7 @@ import {
   hideFormError,
   showFormError,
   ErrorsToVisibleMessages,
+  removePreviousPatterns,
 } from "./forms";
 import Worker from 'worker-loader!./workers/clustering.worker';
 
@@ -121,7 +122,9 @@ async function generatePatterns({
     }
   }
 
-  // TODO: Handle multiple images being uploaded by clearing the DOM of previous content
+  // Remove any previous pattern elements from the DOM
+  removePreviousPatterns()
+
   // Add the source image to the state
   const sourceImage = new SourceImage(colors, colorMode)
   state.source = sourceImage

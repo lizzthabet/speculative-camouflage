@@ -16,6 +16,8 @@ import { findNearestCentroid, kMeans, deltaE00Distance } from './clustering'
 import { trimNumber, scaleCanvasHeightToColors } from '../helpers'
 import { createCanvasWrapper, drawColorsOnCanvas } from "../patterns/sketch-helpers";
 
+export const PALETTE_WRAPPER_ID = 'image-color-palette'
+
 const CIE10D65_DAYLIGHT = [94.811, 100, 107.304]
 
 /**
@@ -448,7 +450,7 @@ export function drawColorPalette(
 
 export function viewColorPalette(paletteCanvas: HTMLCanvasElement, colorsCanvas: HTMLCanvasElement) {
   const wrapper = createCanvasWrapper(
-    'image-color-palette',
+    PALETTE_WRAPPER_ID,
     true,
     `Source image palette`
   )

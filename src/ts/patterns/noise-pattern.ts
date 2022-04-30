@@ -13,6 +13,8 @@ import { deltaE00Distance } from "../colors/clustering";
 import { mapCentroids, mapColors } from '../colors/palette'
 import { createCanvasWrapper, createSaveButtonForSketch, drawColorsOnCanvas } from "./sketch-helpers";
 
+export const NOISE_WRAPPER_ID = "noise-pattern"
+
 const EMPTY_SKETCH = (p: p5) => {
   p.setup = () => {}
   p.windowResized = () => {}
@@ -124,7 +126,7 @@ export function generateNoisePattern({
 
 export function viewNoisePattern(canvas: HTMLCanvasElement) {
   const wrapper = createCanvasWrapper(
-    'noise pattern',
+    NOISE_WRAPPER_ID,
     true,
     'Noise pattern'
   )

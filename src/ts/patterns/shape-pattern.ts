@@ -3,6 +3,8 @@ import { randomInt } from "../helpers"
 import { createCanvasWrapper, createSaveButtonForSketch } from "./sketch-helpers";
 import { Color, ColorList, ShapeDisruptiveInput, ShapeDisruptiveOutput } from "../types"
 
+export const SHAPE_WRAPPER_ID = 'shape-disruptive-pattern'
+
 export function generateShapeDisruptivePattern({
   canvas,
   colorPalette,
@@ -78,7 +80,7 @@ export function generateShapeDisruptivePattern({
 
 export function viewShapeDisruptivePattern(canvas: HTMLCanvasElement) {
   const wrapper = createCanvasWrapper(
-    'shape-disruptive-pattern',
+    SHAPE_WRAPPER_ID,
     true,
     'Shape disruptive pattern'
   )

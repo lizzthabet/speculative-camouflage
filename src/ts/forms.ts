@@ -1,5 +1,8 @@
+import { PALETTE_WRAPPER_ID } from "./colors/palette";
 import { TOR_PERMISSIONS_ERROR } from "./constants";
 import { inchesToPixels } from "./helpers";
+import { NOISE_WRAPPER_ID } from "./patterns/noise-pattern";
+import { SHAPE_WRAPPER_ID } from "./patterns/shape-pattern";
 import { NoisePattern, ShapeDisruptivePattern } from "./state";
 
 // Form element constants
@@ -11,6 +14,8 @@ const SUBMIT = 'submit'
 const BUTTON = 'button'
 const FORM = 'form'
 const CHECKED = 'checked'
+const NOISE_EDIT_WRAPPER_ID = 'noise-edit-wrapper'
+const SHAPE_EDIT_WRAPPER_ID = 'shape-edit-wrapper'
 
 enum InputType {
   Number = 'number',
@@ -328,9 +333,9 @@ const PATTERN_WIDTH_INPUT: FormInputConfig = {
   text: 'width',
   labelClassName: 'inline-label-wrapper',
   type: InputType.Number,
-  inputMax: 50,
+  inputMax: 100,
   inputMin: 0.25,
-  inputStep: 0.25,
+  inputStep: 0.05,
 }
 
 const PATTERN_HEIGHT_INPUT: FormInputConfig = {
@@ -340,9 +345,9 @@ const PATTERN_HEIGHT_INPUT: FormInputConfig = {
   text: 'height',
   labelClassName: 'inline-label-wrapper',
   type: InputType.Number,
-  inputMax: 50,
+  inputMax: 100,
   inputMin: 0.25,
-  inputStep: 0.25,
+  inputStep: 0.05,
 }
 
 // Specific form configurations
@@ -534,6 +539,7 @@ export function createShapePatternEditForms(
   const wrapper = document.createElement('figure')
   const heading = document.createElement('h4')
   heading.innerText = 'Adjust shape disruptive pattern'
+  wrapper.id = SHAPE_EDIT_WRAPPER_ID
   wrapper.appendChild(heading)
 
   const { form: regenerateColorsForm } = createForm(EDIT_SHAPE_COLORS_FORM, (e) => {
@@ -580,13 +586,14 @@ export function createShapePatternEditForms(
   return wrapper
 }
 
-export function createNoisePatternEditForm (
+export function createNoisePatternEditForm(
   pattern: NoisePattern,
   defaultValues?: { [key in EditNoiseControls]?: string }
 ) {
   const wrapper = document.createElement('figure')
   const heading = document.createElement('h4')
   heading.innerText = 'Adjust noise pattern'
+  wrapper.id = NOISE_EDIT_WRAPPER_ID
   wrapper.appendChild(heading)
 
   const { form: paletteSizeForm } = createForm(EDIT_NOISE_PALETTE_SIZE_FORM, (e) => {
@@ -619,4 +626,25 @@ export function createNoisePatternEditForm (
   wrapper.appendChild(patternSizeForm)
 
   return wrapper
+}
+
+export function removePreviousPatterns() {
+  const previousPatternElements = [
+    NOISE_EDIT_WRAPPER_ID,
+    SHAPE_EDIT_WRAPPER_ID,
+    PALETTE_WRAPPER_ID,
+    SHAPE_WRAPPER_ID,
+    NOISE_WRAPPER_ID,
+  ]
+
+  try {
+    previousPatternElements.forEach(id => {
+      const element = document.getElementById(id)
+      if (element) {
+        element.remove()
+      }
+    })
+  } catch (error) {
+    console.error(error)
+  }
 }
