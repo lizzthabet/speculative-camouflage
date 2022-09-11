@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "gulp develop && gulp watch",
     "build": "gulp clean && gulp build",
-    "serve": "yarn run build && docker-compose up tor",
-    "publish": "docker-compose down && yarn run serve",
+    "serve": "yarn run build && docker compose up tor",
+    "publish": "docker compose down && yarn run serve",
     "webpack-build": "webpack --config webpack.prod.js",
     "webpack-dev": "webpack-dev-server --config webpack.dev.js"
   },
