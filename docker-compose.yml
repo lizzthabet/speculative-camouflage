@@ -2,7 +2,7 @@
 version: "3.5"
 services:
   tor:
-    image: goldy/tor-hidden-service
+    image: lizz0thabet/tor-hidden-service:latest
     links:
       - web
     environment:
