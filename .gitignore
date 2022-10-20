@@ -1,13 +1,13 @@
 # Dev stuff
 node_modules/
 package-lock.json
-dist/
+# dist/
 bin/
 nginx-local.conf
 
 # Infra stuff
 .vagrant/
-onion/
+# onion/
 ubuntu-*
 
 # General stuff
