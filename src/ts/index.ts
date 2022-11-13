@@ -16,13 +16,19 @@ import Worker from 'worker-loader!./workers/clustering.worker';
 
 const state = new PatternState()
 
+/**
+ * TODO: Add a warning directly to the index page that notifies if javascript bundle is not loaded
+ * and the form is submitted. Then this script can remove the warning (or add an updated message)
+ * saying that the form can be submitted. Loading an onion site can be real slow!
+ */
+
 window.addEventListener('load', () => {
   const createPatternForm = document.getElementById(CreatePatternElements.Form)
-  const createPatternFormError = document.getElementById(CreatePatternElements.Error) as HTMLParagraphElement
+  const createPatternFormError = document.getElementById(CreatePatternElements.Error) as HTMLParagraphElement | undefined
 
   if (createPatternForm) {
     createPatternForm.addEventListener('change', () => {
-      if (createPatternFormError.classList.contains('form-error__visible')) {
+      if (createPatternFormError?.classList.contains('form-error__visible')) {
         hideFormError(createPatternFormError)
       }
     })
