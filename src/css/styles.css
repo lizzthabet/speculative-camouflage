@@ -200,3 +200,34 @@ button a {
     opacity: 1;
   }
 }
+
+.suit-demo {
+  box-shadow: unset;
+  margin: unset;
+  margin-left: 100px;
+  max-width: 250px;
+}
+
+.rotate3d {
+  animation-name: Spin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: 7s;
+}
+
+@keyframes Spin {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(360deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.instructions {
+  display: flex;
+  flex-direction: row;
+}
