@@ -33,7 +33,6 @@ prodBundle.displayName = 'prod-bundle'
 const css = () => src('src/css/*').pipe(dest('dist/'))
 const assets = () => src('src/img/*').pipe(dest('dist/img/'))
 const html = () => src('src/*.html').pipe(dest('dist/'))
-const config = () => src('src/_headers').pipe(dest('dist/'))
 
 // Watching files
 const watchFiles = () => {
@@ -69,11 +68,11 @@ const reload = (done) => {
 // Creating production bundle
 const productionBuild = series(
   prodBundle,
-  parallel(css, assets, html, config),
+  parallel(css, assets, html),
 )
 
 exports.clean = clean
-exports.copy = parallel(css, assets, html, config)
+exports.copy = parallel(css, assets, html)
 exports.build = productionBuild
 exports.serve = serve
 exports.develop = series(devBundle, parallel(css, assets, html), serveAndWatch)
