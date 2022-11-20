@@ -12,37 +12,19 @@
   </head>
   <link rel="stylesheet" type="text/css" href="styles.css">
   <body>
-    <h1>Speculative camouflage generator</h1>
-    <h2><em>A tool for creating multiscale and shape-disruptive patterns from photographs of specific environments</em></h2>
-    <!-- <p>
-      This tool can be used to create large patterns for wearables based on photographs of specific environments. It generates several designs that use multiscale and shape-disruptive camouflage techniques loosely based on <a href="https://www.academia.edu/21209710/Urban_camouflage_assessment_through_visual_search_and_computational_saliency" target="_blank">a scientific paper published in 2013</a>. Multiscale patterns employ details at various spatial scales to disguise the wearer, while disruptive patterns aim to distort and interrupt the wearer’s outline using blocks of shapes.
-    </p>
+    <h1><em>I am hiding all year round (and you can, too)</em></h1>
+    <h2>A homemade speculative camouflage pattern generator</h2>
     <p>
-      This tool’s patterns are rooted in the “real,” “historical,” and “scientific” but dismiss efficacy to speculate about how (and if?) camouflage can be used as a personal tool for bodied agency. It’s a part of a magical, material, and metaphorical costume that I’m building for myself, as a queer, femme body that lives and moves within a large city. I imagine camouflage as a conceptual and literal technology to hide, obscure, and misrecognize my body in public and corporate space.
-      <img src="img/subway-example.png" alt="A screenshot of a fractal noise pattern next to a photograph of the inside of a subway train that was used to generate the pattern"/>
-    </p> -->
-    <h3>How to use the speculative camouflage generator:</h3>
-    <div class="instructions">
-      <ol>
-        <li>Upload an image of a place</li>
-        <li>Generate your patterns</li>
-        <li>Adjust pattern settings based on what you want</li>
-        <li>Save the images with their final size</li>
-        <li>Send the patterns to your favorite print-on-demand fabric site</li>
-        <li>Fuck with <a href="https://github.com/lizzthabet/camo-processing" target="_blank">the source code</a> and make your own tool</li>
-      </ol>
-      <img class="suit-demo rotate3d" src="img/camouflage-suit.png" alt="TODO"/>
-    </div>
-    <hr />
-    <form id="create-pattern-form" autocomplete="off" aria-labelledby="create-pattern-heading">
-      <h2 id="create-pattern-heading">Generate a pattern</h2>
+      This tool is designed to generate patterns from photographs that can be used to make wearables from handkerchiefs to full-body suits. It creates several patterns that use <u>multiscale</u> and <u>shape-disruptive</u> camouflage techniques loosely based on <a href="https://www.academia.edu/21209710/Urban_camouflage_assessment_through_visual_search_and_computational_saliency" target="_blank">a scientific paper published in 2013</a>. Multiscale patterns employ details at various spatial scales to disguise the wearer, while disruptive patterns aim to distort and interrupt the wearer’s outline using blocks of shapes.
+    </p>
+    <form id="create-pattern-form" autocomplete="off" aria-label="generate a pattern">
 
-      <label for="source-image">Upload a source image</label>
-      <input class="input-with-tip" type="file" id="source-image" multiple="false" accept="image/*" required />
+      <label class="form-item-label form-item" for="source-image">Upload a source image</label>
       <p class="form-tip">Tip: Use a photograph of a place that avoids large areas of sky or harsh sunlight. For best results, collage together photographs of detail shots from around a specific place into a single image.</p>
+      <input class="input-with-tip" type="file" id="source-image" multiple="false" accept="image/*" required />
 
-      <fieldset class="inline-fieldset">
-        <legend>Pattern dimensions (inches)</legend>
+      <fieldset class="inline-fieldset form-item">
+        <legend class="form-item-label">Pattern dimensions (inches)</legend>
 
         <label class="inline-label-wrapper" for="pattern-width">
           <input class="inline-input" type="number" id="pattern-width" min="0.25" max="100" step="0.05" value="10" required />
@@ -55,28 +37,28 @@
         </label>
       </fieldset>
 
-      <label for="color-palette-size">Color palette size</label>
-      <input class="input-with-tip" type="number" id="color-palette-size" min="2" max="32" step="1" value="8" required />
+      <label class="form-item-label form-item" for="color-palette-size">Color palette size</label>
       <p class="form-tip">Tip: Best results will have color palettes between 6-15 colors. It may take several attempts to generate, depending on your source image.</p>
+      <input class="input-with-tip" type="number" id="color-palette-size" min="2" max="32" step="1" value="8" required />
 
-      <fieldset>
-        <legend>Choose patterns</legend>
+      <fieldset class="form-item">
+        <legend class="form-item-label">Choose patterns</legend>
         <label class="checkbox-label" for="shape-disruptive">
-          <input class="checkbox-input" id="shape-disruptive" type="checkbox" value="shape-disruptive"/>
-          Shape disruptive
+          <input class="checkbox-input" id="shape-disruptive" type="checkbox" value="shape-disruptive" checked/>
+          Shape-disruptive
         </label>
         <label class="checkbox-label" for="noise">
-          <input class="checkbox-input" id="noise" type="checkbox" value="noise"/>
-          Noise
+          <input class="checkbox-input" id="noise" type="checkbox" value="noise" checked/>
+          Multiscale
         </label>
       </fieldset>
 
       <p role="alert" id="create-pattern-form-error" class="form-error"></p>
 
-      <button id="create-pattern-submit" type="submit">Generate</button>
+      <button class="form-item" id="create-pattern-submit" type="submit">Generate</button>
       <p class="form-tip">Tip: Pattern generation may take a couple minutes. Debugging logs are available in the console.</p>
     </form>
-    <p>Built by <a href="http://www.lizzthabet.com/">Lizz Thabet</a>. View the <a href="https://github.com/lizzthabet/camo-processing" target="_blank">source code</a>.</p>
+    <footer>Built by <a href="http://www.lizzthabet.com/">Lizz Thabet</a>. View the <a href="https://github.com/lizzthabet/camo-processing" target="_blank">source code</a>.</footer>
 
     <script type="text/javascript" src="bundle.js"></script>
   </body>
