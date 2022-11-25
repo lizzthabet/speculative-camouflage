@@ -75,7 +75,11 @@ footer {
   margin-top: 1.8rem;
 }
 
-.form-item {
+.pattern-wrapper {
+  margin-top: 3rem;
+}
+
+.form-item, .short-form {
   margin-top: 1.8rem;
 }
 
@@ -86,7 +90,8 @@ footer {
 }
 
 .save-button {
-  margin-top: 2rem;
+  margin: unset;
+  padding: 2px 4px;
 }
 
 .checkbox-label {
@@ -106,31 +111,46 @@ footer {
   width: 1.5rem;
 }
 
-.inline-fieldset, .inline-form {
+.inline-fieldset {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
 }
 
-.inline-form {
-  margin-bottom: 2rem;
-}
-
 .inline-label-wrapper {
   align-items: center;
-  display: flex;
+  display: inline-flex;
   margin-bottom: unset;
-  margin-right: 3rem;
 }
 
-.inline-input, .inline-label, .inline-button {
-  margin: unset;
+.inline-label-wrapper + .inline-label-wrapper {
+  margin-left: 3rem;
+}
+
+.inline-input {
   margin-right: 0.5rem;
 }
 
-.inline-input + .inline-button {
-  margin-left: 2rem;
-  margin-right: 2rem;
+.inline-form,
+.inline-form-fieldset,
+.inline-form-label,
+.inline-form-input,
+.inline-form-button
+ {
+  display: inline-block;
+}
+
+.inline-form + .inline-form,
+.inline-form-label + .inline-form-input,
+.inline-form-input + .inline-form-button,
+.inline-form-fieldset + .inline-form-button {
+  margin-left: 1rem;
+}
+
+.inline-form-button {
+  font-size: medium;
+  margin: unset;
+  padding: 2px 6px;
 }
 
 @media only screen and (max-width: 500px) {

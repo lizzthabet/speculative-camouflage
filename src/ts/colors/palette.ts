@@ -452,10 +452,12 @@ export function viewColorPalette(paletteCanvas: HTMLCanvasElement, colorsCanvas:
   const wrapper = createCanvasWrapper(
     PALETTE_WRAPPER_ID,
     true,
-    `Source image palette`
   )
 
-  // TODO: Display block these!
   wrapper.appendChild(paletteCanvas)
   wrapper.appendChild(colorsCanvas)
+
+  const patternHeading = document.createElement('h2')
+  patternHeading.innerHTML = 'Source image palette'
+  wrapper.appendChild(patternHeading)
 }

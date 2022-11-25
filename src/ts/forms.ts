@@ -27,14 +27,14 @@ enum InputType {
 
 // Form and html interfaces
 interface FormConfig {
-  formClassName?: string;
+  formClasses?: string[];
   heading?: HtmlElementConfig;
   id: string;
   controls: (ButtonConfig | FormInputConfig | FormFieldsetConfig)[];
 }
 
 interface HtmlElementConfig {
-  className?: string;
+  classes?: string[];
   id: string | null;
   htmlElement: string;
   text: string;
@@ -46,19 +46,20 @@ interface FormInputConfig extends HtmlElementConfig {
   inputMin?: number;
   inputMax?: number;
   inputStep?: number;
-  labelClassName?: string;
+  labelClasses?: string[];
   tipText?: string;
   type: InputType;
 }
 
 interface FormFieldsetConfig extends HtmlElementConfig {
   fieldsetClassName?: string;
+  legendClasses?: string[];
   htmlElement: typeof FIELDSET;
   options?: FormInputConfig[];
 }
 
 interface ButtonConfig extends HtmlElementConfig {
-  buttonClassName?: string;
+  buttonClasses?: string[];
   htmlElement: typeof BUTTON;
   tipText?: string;
   type: typeof SUBMIT | typeof BUTTON;
@@ -70,15 +71,16 @@ function createInput(config: FormInputConfig, defaultValue?: string) {
   const label: HTMLLabelElement = document.createElement(LABEL)
   label.innerText = config.text
   label.htmlFor = config.id
-  if (config.labelClassName) {
-    label.classList.add(config.labelClassName)
+  if (config.labelClasses) {
+    config.labelClasses.forEach((c) => label.classList.add(c))
+    
   }
 
   const input: HTMLInputElement = document.createElement(config.htmlElement)
   input.id = config.id
   input.type = config.type
-  if (config.className) {
-    input.classList.add(config.className)
+  if (config.classes) {
+    config.classes.forEach((c) => input.classList.add(c))
   }
 
   const tip: HTMLParagraphElement = document.createElement('p')
@@ -124,6 +126,9 @@ function createFieldset(config: FormFieldsetConfig, defaultValues?: { [key: stri
 
   const legend: HTMLLegendElement = document.createElement(LEGEND)
   legend.innerText = config.text
+  if (config.legendClasses) {
+    config.legendClasses.forEach((c) => legend.classList.add(c))
+  }
 
   fieldset.appendChild(legend)
 
@@ -146,8 +151,8 @@ export function createButton(config: ButtonConfig) {
   button.innerText = config.text
   button.type = config.type
 
-  if (config.buttonClassName) {
-    button.classList.add(config.buttonClassName)
+  if (config.buttonClasses) {
+    config.buttonClasses.forEach((c) => button.classList.add(c))
   }
 
   if (config.clickListener) {
@@ -178,10 +183,11 @@ export function createForm(
   form.id = formConfig.id
   form.autocomplete = 'off'
 
-  if (formConfig.formClassName) {
-    form.classList.add(formConfig.formClassName)
+  if (formConfig.formClasses) {
+    formConfig.formClasses.forEach((c) => form.classList.add(c))
   }
 
+  // todo: remove headings
   if (formConfig.heading) {
     const heading = document.createElement(formConfig.heading.htmlElement)
     heading.innerText = formConfig.heading.text
@@ -300,7 +306,7 @@ export const ErrorsToVisibleMessages: {
 // Common form elements shared between multiple forms
 const REGENERATE_BUTTON: ButtonConfig = {
   id: 'override-me',
-  buttonClassName: 'inline-button',
+  buttonClasses: ['inline-form-button'],
   htmlElement: BUTTON,
   type: SUBMIT,
   text: 'Regenerate'
@@ -309,9 +315,9 @@ const REGENERATE_BUTTON: ButtonConfig = {
 const PALETTE_SIZE_INPUT: FormInputConfig = {
   id: 'override-me',
   htmlElement: INPUT,
-  className: 'inline-input',
+  classes: ['inline-form-input'],
   text: 'Color palette size',
-  labelClassName: 'inline-label',
+  labelClasses: ['form-item-label', 'inline-form-label'],
   type: InputType.Number,
   inputMin: 2,
   inputMax: 32,
@@ -322,16 +328,17 @@ const PATTERN_SIZE_FIELDSET: FormFieldsetConfig = {
   id: 'override-me',
   text: 'Pattern dimensions (inches)',
   htmlElement: FIELDSET,
-  fieldsetClassName: 'inline-fieldset',
+  fieldsetClassName: 'inline-form-fieldset',
+  legendClasses: ['form-item-label', 'inline-form-label'],
   options: []
 }
 
 const PATTERN_WIDTH_INPUT: FormInputConfig = {
   id: 'override-me',
-  className: 'inline-input',
+  classes: ['inline-input'],
   htmlElement: INPUT,
   text: 'width',
-  labelClassName: 'inline-label-wrapper',
+  labelClasses: ['inline-label-wrapper'],
   type: InputType.Number,
   inputMax: 100,
   inputMin: 0.25,
@@ -340,10 +347,10 @@ const PATTERN_WIDTH_INPUT: FormInputConfig = {
 
 const PATTERN_HEIGHT_INPUT: FormInputConfig = {
   id: 'override-me',
-  className: 'inline-input',
+  classes: ['inline-input'],
   htmlElement: INPUT,
   text: 'height',
-  labelClassName: 'inline-label-wrapper',
+  labelClasses: ['inline-label-wrapper'],
   type: InputType.Number,
   inputMax: 100,
   inputMin: 0.25,
@@ -383,9 +390,10 @@ export enum EditNoiseControls {
 
 const EDIT_SHAPE_COLORS_FORM: FormConfig = {
   id: `${EditShapeControls.Colors}-form`,
-  formClassName: 'inline-form',
+  formClasses: ['short-form', 'inline-form'],
   controls: [{
     id: EditShapeControls.Colors,
+    buttonClasses: ['inline-form-button'],
     htmlElement: BUTTON,
     text: 'Randomize colors',
     type: SUBMIT
@@ -394,9 +402,10 @@ const EDIT_SHAPE_COLORS_FORM: FormConfig = {
 
 const EDIT_SHAPE_SHAPES_FORM: FormConfig = {
   id: `${EditShapeControls.Shapes}-form`,
-  formClassName: 'inline-form',
+  formClasses: ['short-form', 'inline-form'],
   controls: [{
     id: EditShapeControls.Shapes,
+    buttonClasses: ['inline-form-button'],
     htmlElement: BUTTON,
     text: 'Randomize shapes',
     type: SUBMIT
@@ -405,39 +414,36 @@ const EDIT_SHAPE_SHAPES_FORM: FormConfig = {
 
 const EDIT_SHAPE_NUM_SHAPES_FORM: FormConfig = {
   id: `${EditShapeControls.NumShapes}-form`,
-  formClassName: 'inline-form',
+  formClasses: ['short-form'],
   controls: [
     {
       id: EditShapeControls.NumShapes,
       htmlElement: INPUT,
-      className: 'inline-input',
+      classes: ['inline-form-input'],
       text: 'Number of shapes',
-      labelClassName: 'inline-label',
+      labelClasses: ['form-item-label', 'inline-form-label'],
       type: InputType.Number,
       inputMax: 200,
       inputMin: 2,
       inputStep: 1,
     },
     {
+      ...REGENERATE_BUTTON,
       id: `${EditShapeControls.NumShapes}-submit`,
-      buttonClassName: 'inline-button',
-      htmlElement: BUTTON,
-      text: 'Regenerate',
-      type: SUBMIT
     },
   ]
 }
 
 const EDIT_NOISE_SEED_FORM: FormConfig = {
   id: `${EditNoiseControls.Seed}-form`,
-  formClassName: 'inline-form',
+  formClasses: ['short-form'],
   controls: [
     {
       id: EditNoiseControls.Seed,
       htmlElement: INPUT,
-      className: 'inline-input',
+      classes: ['inline-form-input'],
       text: 'Noise seed',
-      labelClassName: 'inline-label',
+      labelClasses: ['form-item-label', 'inline-form-label'],
       type: InputType.Number,
       inputMin: 1,
       inputMax: 500,
@@ -453,7 +459,7 @@ const EDIT_NOISE_SEED_FORM: FormConfig = {
 
 const EDIT_SHAPE_PALETTE_SIZE_FORM: FormConfig = {
   id: `${EditShapeControls.PaletteSize}-form`,
-  formClassName: 'inline-form',
+  formClasses: ['short-form'],
   controls: [
     {
       ...PALETTE_SIZE_INPUT,
@@ -468,7 +474,7 @@ const EDIT_SHAPE_PALETTE_SIZE_FORM: FormConfig = {
 
 const EDIT_NOISE_PALETTE_SIZE_FORM: FormConfig = {
   id: `${EditNoiseControls.PaletteSize}-form`,
-  formClassName: 'inline-form',
+  formClasses: ['short-form'],
   controls: [
     {
       ...PALETTE_SIZE_INPUT,
@@ -476,7 +482,7 @@ const EDIT_NOISE_PALETTE_SIZE_FORM: FormConfig = {
     },
     {
       ...REGENERATE_BUTTON,
-      tipText: 'Tip: Larger color palettes will generate a nosie pattern with more depth, while smaller color palettes will flatten it.',
+      tipText: 'Tip: Larger color palettes will generate a pattern with more depth, while smaller color palettes will flatten it.',
       id: `${EditNoiseControls.PaletteSize}-submit`,
     }
   ]
@@ -484,7 +490,7 @@ const EDIT_NOISE_PALETTE_SIZE_FORM: FormConfig = {
 
 const EDIT_SHAPE_PATTERN_SIZE_FORM: FormConfig = {
   id: 'shape-pattern-size-form',
-  formClassName: 'inline-form',
+  formClasses: ['short-form'],
   controls: [
     {
       ...PATTERN_SIZE_FIELDSET,
@@ -509,7 +515,7 @@ const EDIT_SHAPE_PATTERN_SIZE_FORM: FormConfig = {
 
 const EDIT_NOISE_PATTERN_SIZE_FORM: FormConfig = {
   id: 'noise-pattern-size-form',
-  formClassName: 'inline-form',
+  formClasses: ['short-form'],
   controls: [
     {
       ...PATTERN_SIZE_FIELDSET,
@@ -537,10 +543,8 @@ export function createShapePatternEditForms(
   defaultValues?: { [key in EditShapeControls]?: string }
 ) {
   const wrapper = document.createElement('figure')
-  const heading = document.createElement('h4')
-  heading.innerText = 'Adjust shape disruptive pattern'
   wrapper.id = SHAPE_EDIT_WRAPPER_ID
-  wrapper.appendChild(heading)
+  wrapper.ariaLabel='Adjust shape disruptive pattern'
 
   const { form: regenerateColorsForm } = createForm(EDIT_SHAPE_COLORS_FORM, (e) => {
     e.preventDefault()
@@ -591,10 +595,8 @@ export function createNoisePatternEditForm(
   defaultValues?: { [key in EditNoiseControls]?: string }
 ) {
   const wrapper = document.createElement('figure')
-  const heading = document.createElement('h4')
-  heading.innerText = 'Adjust noise pattern'
   wrapper.id = NOISE_EDIT_WRAPPER_ID
-  wrapper.appendChild(heading)
+  wrapper.ariaLabel = 'Adjust multiscale pattern'
 
   const { form: paletteSizeForm } = createForm(EDIT_NOISE_PALETTE_SIZE_FORM, (e) => {
     e.preventDefault()
