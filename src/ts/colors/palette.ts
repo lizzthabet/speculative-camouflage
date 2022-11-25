@@ -458,6 +458,6 @@ export function viewColorPalette(paletteCanvas: HTMLCanvasElement, colorsCanvas:
   wrapper.appendChild(colorsCanvas)
 
   const patternHeading = document.createElement('h2')
-  patternHeading.innerHTML = 'Source image palette'
+  patternHeading.innerHTML = 'Source image color palette'
   wrapper.appendChild(patternHeading)
 }

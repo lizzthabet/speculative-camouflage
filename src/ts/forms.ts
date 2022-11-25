@@ -187,7 +187,6 @@ export function createForm(
     formConfig.formClasses.forEach((c) => form.classList.add(c))
   }
 
-  // todo: remove headings
   if (formConfig.heading) {
     const heading = document.createElement(formConfig.heading.htmlElement)
     heading.innerText = formConfig.heading.text
@@ -390,7 +389,7 @@ export enum EditNoiseControls {
 
 const EDIT_SHAPE_COLORS_FORM: FormConfig = {
   id: `${EditShapeControls.Colors}-form`,
-  formClasses: ['short-form', 'inline-form'],
+  formClasses: ['inline-form'],
   controls: [{
     id: EditShapeControls.Colors,
     buttonClasses: ['inline-form-button'],
@@ -402,7 +401,7 @@ const EDIT_SHAPE_COLORS_FORM: FormConfig = {
 
 const EDIT_SHAPE_SHAPES_FORM: FormConfig = {
   id: `${EditShapeControls.Shapes}-form`,
-  formClasses: ['short-form', 'inline-form'],
+  formClasses: ['inline-form'],
   controls: [{
     id: EditShapeControls.Shapes,
     buttonClasses: ['inline-form-button'],

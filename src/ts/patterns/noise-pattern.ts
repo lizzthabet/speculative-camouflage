@@ -133,7 +133,7 @@ export function viewNoisePattern(canvas: HTMLCanvasElement) {
   wrapper.appendChild(canvas)
 
   const patternHeading = document.createElement('h2')
-  patternHeading.innerHTML = 'Multiscale pattern'
+  patternHeading.innerHTML = 'Multiscale noise pattern'
   wrapper.appendChild(patternHeading)
 
   const saveButton = createSaveButtonForSketch({ canvas, filename: 'multiscale-pattern' })
