@@ -1,8 +1,7 @@
 body {
   background-color: #f3f3f3;
   color: #333;
-  font-size: 1.5rem;
-  line-height: 1.5;
+  line-height: 1.2;
   margin: 2rem;
 }
 
@@ -28,18 +27,24 @@ h2 {
   font-weight: normal;
 }
 
-label, legend, input, select {
-  display: block;
-  margin-bottom: 1rem;
+p, ol, input, select, footer {
+  font-size: 1.1rem;
 }
 
-input, select {
-  margin-bottom: 2.3rem;
+p {
+  max-width: 800px;
+}
+
+label, legend, input, select {
+  display: block;
+}
+
+legend {
+  margin-bottom: 1rem;
 }
 
 input, select, button {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 1.5rem;
   text-transform: uppercase;
 }
 
@@ -50,11 +55,11 @@ input[type="number"] {
 fieldset {
   border: unset;
   margin: unset;
-  margin-bottom: 2rem;
   padding: unset;
 }
 
 button {
+  font-size: larger;
   cursor: pointer;
   margin: 0.5rem 0;
   padding: 0.5rem;
@@ -64,6 +69,20 @@ button {
 button a {
   color: unset;
   text-decoration: unset;
+}
+
+footer {
+  margin-top: 1.8rem;
+}
+
+.form-item {
+  margin-top: 1.8rem;
+}
+
+.form-item-label {
+  font-size: 1.2rem;
+  text-decoration: underline;
+  text-underline-offset: 6px;
 }
 
 .save-button {
@@ -82,6 +101,7 @@ button a {
 .checkbox-input {
   height: 1.5rem;
   margin: unset;
+  margin-bottom: 0.25rem;
   margin-right: 0.75rem;
   width: 1.5rem;
 }
@@ -122,42 +142,17 @@ button a {
 }
 
 .form-tip {
-  font-size: 1.2rem;
   font-style: italic;
-}
-
-.input-with-tip {
-  margin-bottom: 1rem;
-}
-
-.input-with-tip + .form-tip {
-  margin-top: 0;
-  margin-bottom: 2.3rem;
 }
 
 .form-error {
   border: 1px solid #333;
   display: none;
-  font-size: 1.2rem;
   padding: 1rem;
 }
 
 .form-error__visible {
   display: block;
-}
-
-.form-error-bold {
-  font-weight: bold;
-}
-
-.sr-only {
-  clip: rect(0 0 0 0); 
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  white-space: nowrap; 
-  width: 1px;
 }
 
 .loading-ellipse1,
