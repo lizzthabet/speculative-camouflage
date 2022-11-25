@@ -82,9 +82,12 @@ export function viewShapeDisruptivePattern(canvas: HTMLCanvasElement) {
   const wrapper = createCanvasWrapper(
     SHAPE_WRAPPER_ID,
     true,
-    'Shape disruptive pattern'
   )
   wrapper.appendChild(canvas)
+
+  const patternHeading = document.createElement('h2')
+  patternHeading.innerHTML = 'Shape-disruptive pattern'
+  wrapper.appendChild(patternHeading)
 
   const saveButton = createSaveButtonForSketch({ canvas, filename: 'shape-disruptive-pattern' })
   wrapper.appendChild(saveButton)

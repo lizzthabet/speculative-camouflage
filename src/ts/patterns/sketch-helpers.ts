@@ -138,12 +138,14 @@ export function produceSketchFromColors({
   return sketch
 }
 
+// TODO: Consider adding titles and save buttons here, since the order of elements has changed
 export const createCanvasWrapper = (id: string, appendToDom: boolean, title?: string) => {
   const wrapper = document.createElement('figure')
   wrapper.id = id
+  wrapper.classList.add('pattern-wrapper')
 
   if (title) {
-    const wrapperTitle = document.createElement('h3')
+    const wrapperTitle = document.createElement('h2')
     wrapperTitle.innerHTML = title
     wrapper.appendChild(wrapperTitle)
   }
@@ -166,16 +168,16 @@ export function createSaveButtonForSketch({ p5Instance, canvas, filename }: {
     button = createButton({
       id: `save-pattern-${filename.toLowerCase()}`,
       htmlElement: 'button',
-      buttonClassName: 'save-button',
+      buttonClasses: ['save-button'],
       type: 'button',
-      text: 'Save pattern',
+      text: 'Save',
       clickListener: () => p5Instance.saveCanvas(filename, 'png'),
     }).button
   } else if (canvas) {
     button = createButton({
       id: `save-pattern-${filename.toLowerCase()}`,
       htmlElement: 'button',
-      buttonClassName: 'save-button',
+      buttonClasses: ['save-button'],
       type: 'button',
       text: '',
     }).button
@@ -183,7 +185,7 @@ export function createSaveButtonForSketch({ p5Instance, canvas, filename }: {
     const downloadLink: HTMLAnchorElement = document.createElement('a')
     downloadLink.download = filename
     downloadLink.href = canvas.toDataURL()
-    downloadLink.innerText = 'Save pattern'
+    downloadLink.innerText = 'Save'
     button.prepend(downloadLink)
   } else {
     throw new Error(SAVE_BUTTON_ERROR)
