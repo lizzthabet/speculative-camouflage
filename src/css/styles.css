@@ -175,6 +175,21 @@ footer {
   display: block;
 }
 
+.tor-info {
+  background-color: rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  display: none;
+  font-style: italic;
+  margin: 1.8rem 0;
+  max-width: 775px;
+  padding: 0.5rem 1rem;
+}
+
+.tor-info__visible {
+  display: block;
+}
+
+
 .loading-ellipse1,
 .loading-ellipse2,
 .loading-ellipse3 {
