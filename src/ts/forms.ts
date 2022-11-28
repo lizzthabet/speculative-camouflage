@@ -278,6 +278,14 @@ export function beginLoadingAnimation(button: HTMLButtonElement) {
   }
 }
 
+export function showTorInformation(infoElement?: HTMLElement) {
+  if (infoElement) {
+    infoElement.classList.add('tor-info__visible')
+  }
+
+  return infoElement
+}
+
 export function showFormError(errorElement: HTMLParagraphElement, errorText: string) {
   if (errorText) {
     errorElement.innerHTML = `<b>Unexpected error:</b> ${errorText}`
@@ -367,6 +375,7 @@ export enum CreatePatternElements {
   PatternWidth = 'pattern-width',
   SubmitButton = 'create-pattern-submit',
   Error = 'create-pattern-form-error',
+  TorInfo = 'tor-info',
 }
 
 // Unique ids attached to each form element

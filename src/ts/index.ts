@@ -11,6 +11,7 @@ import {
   showFormError,
   ErrorsToVisibleMessages,
   removePreviousPatterns,
+  showTorInformation,
 } from "./forms";
 import Worker from 'worker-loader!./workers/clustering.worker';
 
@@ -23,6 +24,11 @@ const state = new PatternState()
  */
 
 window.addEventListener('load', () => {
+  const torInfoElement = document.getElementById(CreatePatternElements.TorInfo)
+  if (!isTorBrowser(window.location)) {
+    showTorInformation(torInfoElement)
+  }
+
   const createPatternForm = document.getElementById(CreatePatternElements.Form)
   const createPatternFormError = document.getElementById(CreatePatternElements.Error) as HTMLParagraphElement | undefined
 
