@@ -1,7 +1,7 @@
 import { ColorMode, CreatePatternsInput, Pattern } from "./types";
 import { countUniqueColorsTillThreshhold, inchesToPixels, isTorBrowser } from "./helpers";
 import { COLOR_COUNT_CUTOFF, DEFAULT_VORONOI_SITES, TOR_PERMISSIONS_ERROR } from "./constants";
-import { getColorsFromUploadedImage } from './colors/palette';
+import { getColorsFromUploadedImage, PALETTE_WRAPPER_ID } from './colors/palette';
 import { NoisePattern, PatternState, ShapeDisruptivePattern, SourceImage } from "./state";
 import {
   CreatePatternElements,
@@ -76,6 +76,12 @@ window.addEventListener('load', () => {
         // Re-enable any buttons after pattern generation is complete
         enableOrDisableButtons({ buttons: disabledButtons, disable: false })
         endLoadingAnimation()
+
+        // Scroll to the image color palette, so patterns are visible
+        const paletteElement = document.getElementById(PALETTE_WRAPPER_ID)
+        if (paletteElement) {
+          paletteElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
       } catch (error) {
         console.error(`Error generating patterns from uploaded image:`, error)
 
